@@ -9,6 +9,8 @@ type AuthContextType = {
   user: User | null;
   profile: any | null;
   loading: boolean;
+  isNewUser: boolean;
+  setIsNewUser: (value: boolean) => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -22,6 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   useEffect(() => {
     async function getInitialSession() {
@@ -47,15 +50,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     getInitialSession();
     
+    // Check for URL hash indicating email confirmation
+    const hash = window.location.hash;
+    if (hash && hash.includes('#access_token=')) {
+      toast.success('Email verified successfully! Logging you in...', {
+        duration: 5000,
+      });
+      setIsNewUser(true);
+      // Handle the redirect in a clean way
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event);
         setSession(session);
         setUser(session?.user || null);
         
-        if (session?.user) {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Check if it's a new user
+          const isNew = await checkIfNewUser(session.user.id);
+          if (isNew) {
+            setIsNewUser(true);
+          }
+          
           await fetchProfile(session.user.id);
-        } else {
+        } else if (event === 'SIGNED_OUT') {
           setProfile(null);
         }
         
@@ -68,6 +89,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, []);
+  
+  const checkIfNewUser = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('created_at')
+      .eq('id', userId)
+      .single();
+      
+    if (error) {
+      console.error('Error checking if user is new:', error);
+      return false;
+    }
+    
+    // If profile was created less than 30 seconds ago, consider it a new user
+    if (data) {
+      const createdAt = new Date(data.created_at);
+      const now = new Date();
+      const diffSeconds = (now.getTime() - createdAt.getTime()) / 1000;
+      return diffSeconds < 30;
+    }
+    
+    return false;
+  };
   
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -107,14 +151,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const signUp = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error, data } = await supabase.auth.signUp({ email, password });
       
       if (error) {
         toast.error(error.message);
         throw error;
       }
       
-      toast.success('Account created successfully!');
+      if (data?.user && !data?.session) {
+        // Email confirmation required
+        toast.success('Account created! Please check your email to verify your account.', {
+          duration: 6000,
+        });
+      } else {
+        // Auto-sign in (if email verification is disabled in Supabase)
+        toast.success('Account created successfully!');
+        setIsNewUser(true);
+      }
     } catch (error) {
       console.error('Sign up error:', error);
       throw error;
@@ -143,6 +196,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user, 
       profile,
       loading, 
+      isNewUser,
+      setIsNewUser,
       signIn, 
       signUp, 
       signOut,

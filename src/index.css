@@ -75,6 +75,31 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    overflow-x: hidden;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+
+  /* Firefox scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted-foreground) transparent;
   }
 }
 
@@ -91,7 +116,6 @@
     @apply bg-clip-text text-transparent;
   }
   
-  /* Animation utilities */
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
@@ -106,6 +130,15 @@
   
   .hover-lift:hover {
     transform: translateY(-4px);
+  }
+  
+  .glow-effect {
+    box-shadow: 0 0 15px 2px var(--tw-shadow-color);
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .glow-primary {
+    --tw-shadow-color: rgba(139, 92, 246, 0.3);
   }
 }
 
