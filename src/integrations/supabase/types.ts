@@ -9,7 +9,153 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          calories: number | null
+          completed_at: string | null
+          created_at: string | null
+          distance: number | null
+          duration: number | null
+          heart_rate: number | null
+          id: string
+          steps: number | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          calories?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          distance?: number | null
+          duration?: number | null
+          heart_rate?: number | null
+          id?: string
+          steps?: number | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          calories?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          distance?: number | null
+          duration?: number | null
+          heart_rate?: number | null
+          id?: string
+          steps?: number | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          fitness_level: string | null
+          goal: string | null
+          height: number | null
+          id: string
+          updated_at: string | null
+          username: string | null
+          weight: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          fitness_level?: string | null
+          goal?: string | null
+          height?: number | null
+          id: string
+          updated_at?: string | null
+          username?: string | null
+          weight?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          fitness_level?: string | null
+          goal?: string | null
+          height?: number | null
+          id?: string
+          updated_at?: string | null
+          username?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      streaks: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          last_activity_date: string | null
+          longest_streak: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workouts: {
+        Row: {
+          calories: number | null
+          completed: boolean | null
+          created_at: string | null
+          description: string | null
+          duration: number | null
+          id: string
+          scheduled_date: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          calories?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          scheduled_date?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          calories?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          scheduled_date?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
