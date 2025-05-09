@@ -76,7 +76,7 @@ const AchievementTracker: React.FC = () => {
               <TabsContent value="steps" className="mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {achievements
-                    .filter(a => a.milestone?.type === 'steps')
+                    .filter(a => a.milestone_type === 'steps')
                     .map(achievement => (
                       <AchievementCard key={achievement.milestone_id} achievement={achievement} />
                     ))
@@ -87,7 +87,7 @@ const AchievementTracker: React.FC = () => {
               <TabsContent value="workouts" className="mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {achievements
-                    .filter(a => a.milestone?.type === 'workouts')
+                    .filter(a => a.milestone_type === 'workouts')
                     .map(achievement => (
                       <AchievementCard key={achievement.milestone_id} achievement={achievement} />
                     ))
@@ -98,7 +98,7 @@ const AchievementTracker: React.FC = () => {
               <TabsContent value="streak" className="mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {achievements
-                    .filter(a => a.milestone?.type === 'streak')
+                    .filter(a => a.milestone_type === 'streak')
                     .map(achievement => (
                       <AchievementCard key={achievement.milestone_id} achievement={achievement} />
                     ))
@@ -164,8 +164,8 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
   };
   
   const getProgressPercentage = () => {
-    if (!achievement.milestone) return 0;
-    const target = achievement.milestone.target_value;
+    if (!achievement.milestone_target_value) return 0;
+    const target = achievement.milestone_target_value;
     const progress = achievement.progress;
     return Math.min(100, Math.round((progress / target) * 100));
   };
@@ -187,9 +187,9 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
           <div className={`p-1 rounded-md ${
             achievement.achieved ? 'bg-green-100 dark:bg-green-900/50' : 'bg-muted'
           } mr-2`}>
-            {getAchievementIcon(achievement.milestone?.type)}
+            {getAchievementIcon(achievement.milestone_type)}
           </div>
-          <h3 className="font-medium text-sm">{achievement.milestone?.title}</h3>
+          <h3 className="font-medium text-sm">{achievement.milestone_title}</h3>
         </div>
         {achievement.achieved && (
           <Badge variant="outline" className="bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800">
@@ -198,11 +198,11 @@ const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
         )}
       </div>
       
-      <p className="text-xs text-muted-foreground mb-2">{achievement.milestone?.description}</p>
+      <p className="text-xs text-muted-foreground mb-2">{achievement.milestone_description}</p>
       
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs">
-          <span>{achievement.progress} / {achievement.milestone?.target_value}</span>
+          <span>{achievement.progress} / {achievement.milestone_target_value}</span>
           <span>{progressPercent}%</span>
         </div>
         <Progress value={progressPercent} className="h-1.5" />

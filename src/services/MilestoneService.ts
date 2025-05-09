@@ -30,7 +30,10 @@ export const MilestoneService = {
   getAllMilestones: async (): Promise<Milestone[]> => {
     try {
       // Use RPC function instead of direct table access
-      const { data, error } = await supabase.rpc('get_all_milestones');
+      const { data, error } = await supabase.rpc('get_all_milestones') as {
+        data: Milestone[] | null;
+        error: any;
+      };
       
       if (error) {
         console.error('Error fetching milestones:', error);
@@ -56,7 +59,10 @@ export const MilestoneService = {
       // Get user milestones with milestone details using RPC function
       const { data, error } = await supabase.rpc('get_user_milestones', {
         p_user_id: user.id
-      });
+      }) as {
+        data: UserMilestone[] | null;
+        error: any;
+      };
       
       if (error) {
         console.error('Error fetching user milestones:', error);
@@ -93,7 +99,10 @@ export const MilestoneService = {
       // Check for newly achieved milestones
       const { data: newlyAchieved } = await supabase.rpc('get_newly_achieved_milestones', {
         p_user_id: user.id
-      });
+      }) as {
+        data: Milestone[] | null;
+        error: any;
+      };
       
       // Show achievement notifications
       if (newlyAchieved && newlyAchieved.length > 0) {
@@ -121,7 +130,10 @@ export const MilestoneService = {
       // Count completed workouts using the RPC function
       const { data, error } = await supabase.rpc('count_completed_workouts', {
         p_user_id: user.id
-      });
+      }) as {
+        data: number | null;
+        error: any;
+      };
         
       if (error) {
         console.error('Error counting workouts:', error);
@@ -165,7 +177,10 @@ export const MilestoneService = {
         .from('streaks')
         .select('current_streak, longest_streak')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .maybeSingle() as {
+          data: { current_streak: number, longest_streak: number } | null;
+          error: any;
+        };
         
       if (error || !data) {
         console.error('Error fetching user streak:', error);
