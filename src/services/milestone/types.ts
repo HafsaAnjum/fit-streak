@@ -31,21 +31,21 @@ export async function getCurrentUser() {
 }
 
 // Helper function to call RPC safely with proper typing
-export async function callRpc<T>(
+export async function callRpc<T = any>(
   functionName: string, 
-  params?: Record<string, any>
+  params: Record<string, any> = {}
 ): Promise<T[]> {
   try {
-    const { data, error } = await supabase.rpc(functionName, params || {});
+    const { data, error } = await supabase.rpc(functionName, params);
     
     if (error) {
       console.error(`Error calling RPC ${functionName}:`, error);
-      return [];
+      return [] as T[];
     }
     
-    return data as T[] || [];
+    return (data as T[]) || [];
   } catch (error) {
     console.error(`Exception in RPC ${functionName}:`, error);
-    return [];
+    return [] as T[];
   }
 }

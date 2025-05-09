@@ -47,7 +47,7 @@ export async function getCurrentUser() {
 }
 
 // Helper function to call RPC safely with proper typing
-export async function callRpc<T>(
+export async function callRpc<T = any>(
   functionName: string, 
   params: Record<string, any> = {}
 ): Promise<T[]> {
