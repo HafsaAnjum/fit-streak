@@ -132,14 +132,17 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     
     // If the user is authenticated, update their profile with minimal data
     if (user) {
-      // Fix the Promise handling by using simple then chains
-      supabase
-        .from('profiles')
-        .update({
-          fitness_level: 'beginner', // Default value
-          username: user.email?.split('@')[0] || 'user' // Basic username from email
+      // Fixed: Using Promise.resolve to ensure the .then chain can properly handle TypeScript PromiseLike
+      Promise.resolve()
+        .then(() => {
+          return supabase
+            .from('profiles')
+            .update({
+              fitness_level: 'beginner', // Default value
+              username: user.email?.split('@')[0] || 'user' // Basic username from email
+            })
+            .eq('id', user.id);
         })
-        .eq('id', user.id)
         .then(() => {
           // Refresh the profile data
           return refreshProfile();
@@ -194,23 +197,27 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
   const handleSubmit = () => {
     // Save user profile data to Supabase
     if (user) {
-      supabase
-        .from('profiles')
-        .update({
-          username: formData.nickname || user.email?.split('@')[0],
-          full_name: formData.fullName,
-          fitness_level: formData.fitnessLevel || 'beginner', // Ensure a default value
-          fitness_goal: formData.fitnessGoal || 'general fitness',
-          workout_type: formData.workoutType || 'mixed',
-          age: formData.age ? parseInt(formData.age) : null,
-          height: formData.height ? parseFloat(formData.height) : null,
-          weight: formData.weight ? parseFloat(formData.weight) : null,
-          gender: formData.gender || 'prefer_not_to_say',
-          preferred_workout_time: formData.workoutTime || 'anytime',
-          data_source: formData.dataSourceType || 'none',
-          allow_notifications: formData.allowNotifications
+      // Fixed: Using Promise.resolve to ensure the .then chain can properly handle TypeScript PromiseLike
+      Promise.resolve()
+        .then(() => {
+          return supabase
+            .from('profiles')
+            .update({
+              username: formData.nickname || user.email?.split('@')[0],
+              full_name: formData.fullName,
+              fitness_level: formData.fitnessLevel || 'beginner', // Ensure a default value
+              fitness_goal: formData.fitnessGoal || 'general fitness',
+              workout_type: formData.workoutType || 'mixed',
+              age: formData.age ? parseInt(formData.age) : null,
+              height: formData.height ? parseFloat(formData.height) : null,
+              weight: formData.weight ? parseFloat(formData.weight) : null,
+              gender: formData.gender || 'prefer_not_to_say',
+              preferred_workout_time: formData.workoutTime || 'anytime',
+              data_source: formData.dataSourceType || 'none',
+              allow_notifications: formData.allowNotifications
+            })
+            .eq('id', user.id);
         })
-        .eq('id', user.id)
         .then(() => {
           toast.success("Profile set up successfully!");
           return refreshProfile();
