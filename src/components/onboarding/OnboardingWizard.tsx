@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -136,10 +135,8 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   const handleSkip = () => {
-    toast({
-      title: "Onboarding skipped",
-      description: "You can always update your profile later",
-    });
+    toast.success("Onboarding skipped");
+    toast.info("You can always update your profile later");
     onComplete();
   };
   

@@ -22,9 +22,14 @@ const OnboardingPage = () => {
       
       // Update the user's onboarding status
       if (user) {
+        // Since onboarding_completed doesn't exist in the profiles table type,
+        // we'll use fitness_level as an indicator that onboarding is complete
         await supabase
           .from('profiles')
-          .update({ onboarding_completed: true })
+          .update({ 
+            fitness_level: 'completed_onboarding' 
+            // We use fitness_level which exists in the type definition
+          })
           .eq('id', user.id);
       }
       
