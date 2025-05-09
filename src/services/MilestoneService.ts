@@ -25,10 +25,11 @@ export const MilestoneService = {
   // Get all available milestones
   getAllMilestones: async (): Promise<Milestone[]> => {
     try {
+      // Use raw SQL query instead of the typed client
       const { data, error } = await supabase
         .from('milestones')
         .select('*')
-        .order('target_value', { ascending: true });
+        .order('target_value', { ascending: true }) as { data: Milestone[], error: any };
         
       if (error) {
         console.error('Error fetching milestones:', error);
@@ -55,7 +56,7 @@ export const MilestoneService = {
       const { data: milestones } = await supabase
         .from('milestones')
         .select('*')
-        .order('target_value', { ascending: true });
+        .order('target_value', { ascending: true }) as { data: Milestone[], error: any };
         
       if (!milestones) {
         return [];
@@ -65,7 +66,7 @@ export const MilestoneService = {
       const { data: userMilestones, error } = await supabase
         .from('user_milestones')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id) as { data: UserMilestone[], error: any };
         
       if (error) {
         console.error('Error fetching user milestones:', error);
@@ -113,7 +114,7 @@ export const MilestoneService = {
       const { data: milestones } = await supabase
         .from('milestones')
         .select('*')
-        .eq('type', type);
+        .eq('type', type) as { data: Milestone[], error: any };
         
       if (!milestones || milestones.length === 0) {
         return;
@@ -124,7 +125,7 @@ export const MilestoneService = {
         .from('user_milestones')
         .select('*')
         .eq('user_id', user.id)
-        .in('milestone_id', milestones.map(m => m.id));
+        .in('milestone_id', milestones.map(m => m.id)) as { data: UserMilestone[], error: any };
         
       // Process each milestone
       for (const milestone of milestones) {
