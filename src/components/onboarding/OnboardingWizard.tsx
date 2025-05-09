@@ -68,7 +68,6 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
   });
 
   const handleNext = async () => {
-    // Validate current step
     if (step === 1) {
       // Welcome step, no validation needed
       setStep(step + 1);
@@ -124,7 +123,12 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     
     if (step === totalSteps) {
       // Final step, submit everything
-      await handleSubmit();
+      try {
+        await handleSubmit();
+      } catch (error) {
+        console.error('Error during submission:', error);
+        toast.error("Failed to complete onboarding. Please try again.");
+      }
     }
   };
   
@@ -228,8 +232,14 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
       }
       
       toast.success("Profile set up successfully!");
-      await refreshProfile();
-      onComplete(); // This will trigger navigation to the home page
+      try {
+        await refreshProfile();
+        onComplete(); // This will trigger navigation to the home page
+      } catch (refreshError) {
+        console.error('Error refreshing profile:', refreshError);
+        // Even if refreshing fails, still complete onboarding
+        onComplete();
+      }
     } catch (error) {
       console.error('Error in onboarding submission:', error);
       toast.error("Something went wrong. Please try again.");
