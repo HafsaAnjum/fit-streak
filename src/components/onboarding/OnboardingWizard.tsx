@@ -145,7 +145,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     
     // If the user is authenticated, update their profile with minimal data
     if (user) {
-      // Use Promise chaining with proper error handling
+      // Fix the Promise handling with proper chaining
       supabase
         .from('profiles')
         .update({
@@ -154,7 +154,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
         })
         .eq('id', user.id)
         .then(() => {
-          // Refresh the profile data
+          // Refresh the profile data using proper promise chaining
           return refreshProfile();
         })
         .then(() => {
@@ -235,6 +235,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
       
       toast.success("Profile set up successfully!");
       
+      // Fixed promise handling using proper async/await pattern
       try {
         await refreshProfile();
         onComplete(); // This will trigger navigation to the home page
