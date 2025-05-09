@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StepContentProps } from "../types";
 
@@ -27,6 +27,7 @@ const UserInfoStep: React.FC<StepContentProps> = ({ userInfoForm }) => {
                     {...field} 
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -53,6 +54,7 @@ const UserInfoStep: React.FC<StepContentProps> = ({ userInfoForm }) => {
                     <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -72,6 +74,7 @@ const UserInfoStep: React.FC<StepContentProps> = ({ userInfoForm }) => {
                     {...field} 
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -89,6 +92,7 @@ const UserInfoStep: React.FC<StepContentProps> = ({ userInfoForm }) => {
                     {...field} 
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -117,6 +121,7 @@ const UserInfoStep: React.FC<StepContentProps> = ({ userInfoForm }) => {
                   <SelectItem value="night">Night (8pm-12am)</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
             </FormItem>
           )}
         />
