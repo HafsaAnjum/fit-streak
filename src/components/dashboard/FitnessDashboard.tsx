@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +10,15 @@ import ActivityTrendsChart from "./ActivityTrendsChart";
 import FitnessMetricsSection from "./FitnessMetricsSection";
 import ManualFitnessEntry from "../ManualFitnessEntry";
 import WebHealthConnect from "../WebHealthConnect";
+
+interface ActivityData {
+  date: string;
+  steps?: number;
+  calories?: number;
+  heartRate?: number;
+  sleepHours?: number;
+  [key: string]: string | number | undefined;
+}
 
 const FitnessDashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("overview");
@@ -117,7 +125,7 @@ const FitnessDashboard = () => {
     
     // Convert map to array and sort by date
     return Array.from(mergedData.values())
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) as ActivityData[];
   }, [fitbitData]);
 
   // Check if any data source is connected

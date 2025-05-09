@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // Google Fit API endpoints
@@ -7,7 +6,8 @@ const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
 // Google Fit OAuth configuration
 // Note: In a production environment, these would ideally be stored securely
-const CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"; // Replace with your Google Client ID
+const CLIENT_ID = "971295422527-32emekomivfnbshsfoac8edflnnlekia.apps.googleusercontent.com";
+const CLIENT_SECRET = "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";
 const REDIRECT_URI = window.location.origin + "/auth/google-fit/callback";
 const SCOPES = [
   "https://www.googleapis.com/auth/fitness.activity.read",
@@ -32,19 +32,24 @@ interface FitnessData {
 
 // Direct database access functions
 async function getTokensFromDb(userId: string, provider: string): Promise<FitnessToken | null> {
-  const { data, error } = await supabase
-    .from('fitness_connections')
-    .select('access_token, refresh_token, expires_at')
-    .eq('user_id', userId)
-    .eq('provider', provider)
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('fitness_connections')
+      .select('access_token, refresh_token, expires_at')
+      .eq('user_id', userId)
+      .eq('provider', provider)
+      .maybeSingle();
+      
+    if (error || !data) {
+      console.error("Error getting tokens:", error);
+      return null;
+    }
     
-  if (error || !data) {
-    console.error("Error getting tokens:", error);
+    return data as FitnessToken;
+  } catch (error) {
+    console.error("Error in getTokensFromDb:", error);
     return null;
   }
-  
-  return data as FitnessToken;
 }
 
 async function saveTokensToDb(
@@ -52,38 +57,48 @@ async function saveTokensToDb(
   provider: string, 
   tokens: FitnessToken
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('fitness_connections')
-    .upsert({
-      user_id: userId,
-      provider: provider,
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_at: tokens.expires_at,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'user_id,provider' });
+  try {
+    const { error } = await supabase
+      .from('fitness_connections')
+      .upsert({
+        user_id: userId,
+        provider: provider,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: tokens.expires_at,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,provider' });
+      
+    if (error) {
+      console.error("Error saving tokens:", error);
+      return false;
+    }
     
-  if (error) {
-    console.error("Error saving tokens:", error);
+    return true;
+  } catch (error) {
+    console.error("Error in saveTokensToDb:", error);
     return false;
   }
-  
-  return true;
 }
 
 async function deleteTokensFromDb(userId: string, provider: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('fitness_connections')
-    .delete()
-    .eq('user_id', userId)
-    .eq('provider', provider);
+  try {
+    const { error } = await supabase
+      .from('fitness_connections')
+      .delete()
+      .eq('user_id', userId)
+      .eq('provider', provider);
+      
+    if (error) {
+      console.error("Error deleting tokens:", error);
+      return false;
+    }
     
-  if (error) {
-    console.error("Error deleting tokens:", error);
+    return true;
+  } catch (error) {
+    console.error("Error in deleteTokensFromDb:", error);
     return false;
   }
-  
-  return true;
 }
 
 export const GoogleFitService = {

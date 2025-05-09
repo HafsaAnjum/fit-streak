@@ -1,7 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Navigation from "@/components/Navigation";
 import WorkoutPlanner from "@/components/WorkoutPlanner";
 import ActivityTracker from "@/components/ActivityTracker";

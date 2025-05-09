@@ -1,16 +1,15 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, CalendarCheck, BarChart2, Settings, User, Dumbbell, Heart } from 'lucide-react';
+import { Activity, BarChart, Cog, Home, UserCircle, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/context/AuthContext';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
   const closeSheet = () => setOpen(false);
