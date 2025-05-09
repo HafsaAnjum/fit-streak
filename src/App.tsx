@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import ChatButton from "@/components/ChatButton";
 import OnboardingPage from "./pages/OnboardingPage";
+import GoogleFitCallback from "@/components/GoogleFitCallback";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <OnboardingPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/auth/google-fit/callback" 
+                element={
+                  <ProtectedRoute>
+                    <GoogleFitCallback />
                   </ProtectedRoute>
                 } 
               />

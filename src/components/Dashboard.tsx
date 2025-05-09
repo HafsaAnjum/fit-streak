@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { BarChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrendingUp } from "lucide-react";
@@ -13,8 +13,12 @@ import CompletionRateChart from "./dashboard/CompletionRateChart";
 import UpcomingWorkouts from "./dashboard/UpcomingWorkouts";
 import DailyGoalsCard from "./dashboard/DailyGoalsCard";
 import { mockData, weeklyData, monthlyTrend } from "./dashboard/DataProvider";
+import FitnessDataDashboard from "./dashboard/FitnessDataDashboard";
+import { useFitnessData } from "@/hooks/useFitnessData";
 
 const Dashboard = () => {
+  const { isConnected } = useFitnessData();
+  
   return (
     <div className="space-y-6 pb-12">
       <motion.div 
@@ -33,7 +37,10 @@ const Dashboard = () => {
         </Button>
       </motion.div>
 
-      {/* Metrics Cards */}
+      {/* Fitness Data Dashboard (only shows if connected) */}
+      {isConnected && <FitnessDataDashboard />}
+
+      {/* Original Dashboard Content */}
       <MetricsSection mockData={mockData} />
 
       {/* Charts Section */}

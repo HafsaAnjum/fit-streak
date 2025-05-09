@@ -1,0 +1,348 @@
+
+import { supabase } from "@/integrations/supabase/client";
+
+// Google Fit API endpoints
+const BASE_URL = "https://www.googleapis.com/fitness/v1/users/me";
+const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
+
+// Google Fit OAuth configuration
+// Note: In a production environment, these would ideally be stored securely
+const CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"; // Replace with your Google Client ID
+const REDIRECT_URI = window.location.origin + "/auth/google-fit/callback";
+const SCOPES = [
+  "https://www.googleapis.com/auth/fitness.activity.read",
+  "https://www.googleapis.com/auth/fitness.location.read",
+  "https://www.googleapis.com/auth/fitness.body.read",
+  "https://www.googleapis.com/auth/fitness.heart_rate.read",
+].join(" ");
+
+interface FitnessToken {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number; // Timestamp when token expires
+}
+
+interface FitnessData {
+  steps: { date: string; value: number }[];
+  calories: { date: string; value: number }[];
+  distance: { date: string; value: number }[];
+  activeMinutes: { date: string; value: number }[];
+  lastSynced: string;
+}
+
+export const GoogleFitService = {
+  // Initiate OAuth flow
+  initiateAuth: () => {
+    // Store the current URL to return after authentication
+    localStorage.setItem("authRedirectUrl", window.location.pathname);
+
+    // Create and redirect to Google OAuth URL
+    const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+    authUrl.searchParams.append("client_id", CLIENT_ID);
+    authUrl.searchParams.append("redirect_uri", REDIRECT_URI);
+    authUrl.searchParams.append("response_type", "code");
+    authUrl.searchParams.append("scope", SCOPES);
+    authUrl.searchParams.append("access_type", "offline");
+    authUrl.searchParams.append("prompt", "consent");
+    
+    window.location.href = authUrl.toString();
+  },
+
+  // Handle OAuth callback and exchange code for tokens
+  handleAuthCallback: async (code: string): Promise<boolean> => {
+    try {
+      const tokenResponse = await fetch(TOKEN_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          code,
+          client_id: CLIENT_ID,
+          redirect_uri: REDIRECT_URI,
+          grant_type: "authorization_code",
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        throw new Error("Failed to exchange code for tokens");
+      }
+
+      const tokenData = await tokenResponse.json();
+      const expiresAt = Date.now() + tokenData.expires_in * 1000;
+      
+      // Save tokens to Supabase for the current user
+      const { error } = await saveTokensToSupabase({
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_at: expiresAt,
+      });
+
+      if (error) throw error;
+      
+      return true;
+    } catch (error) {
+      console.error("Error in handleAuthCallback:", error);
+      return false;
+    }
+  },
+
+  // Fetch fitness data from Google Fit API
+  getFitnessData: async (days = 7): Promise<FitnessData | null> => {
+    try {
+      // Get tokens from storage
+      const tokens = await getTokensFromSupabase();
+      if (!tokens) {
+        throw new Error("No tokens available");
+      }
+
+      // Check if token is expired
+      if (tokens.expires_at < Date.now()) {
+        const refreshed = await refreshAccessToken(tokens.refresh_token);
+        if (!refreshed) {
+          throw new Error("Failed to refresh token");
+        }
+      }
+      
+      // Calculate time range for query (past N days)
+      const endTime = new Date();
+      const startTime = new Date();
+      startTime.setDate(startTime.getDate() - days);
+      
+      const startTimeMillis = startTime.getTime();
+      const endTimeMillis = endTime.getTime();
+      
+      // Fetch steps data
+      const stepsData = await fetchDatasetFromGoogleFit(
+        tokens.access_token,
+        "derived:com.google.step_count.delta:com.google.android.gms:estimated_steps",
+        startTimeMillis,
+        endTimeMillis
+      );
+      
+      // Fetch calories data
+      const caloriesData = await fetchDatasetFromGoogleFit(
+        tokens.access_token,
+        "derived:com.google.calories.expended:com.google.android.gms:merge_calories_expended",
+        startTimeMillis,
+        endTimeMillis
+      );
+      
+      // Fetch distance data
+      const distanceData = await fetchDatasetFromGoogleFit(
+        tokens.access_token,
+        "derived:com.google.distance.delta:com.google.android.gms:merge_distance_delta",
+        startTimeMillis,
+        endTimeMillis
+      );
+      
+      // Fetch active minutes data
+      const activeMinutesData = await fetchDatasetFromGoogleFit(
+        tokens.access_token,
+        "derived:com.google.active_minutes:com.google.android.gms:merge_active_minutes",
+        startTimeMillis,
+        endTimeMillis
+      );
+      
+      // Process and structure the data by day
+      const result: FitnessData = {
+        steps: processDataPoints(stepsData, startTimeMillis, days),
+        calories: processDataPoints(caloriesData, startTimeMillis, days),
+        distance: processDataPoints(distanceData, startTimeMillis, days),
+        activeMinutes: processDataPoints(activeMinutesData, startTimeMillis, days),
+        lastSynced: new Date().toISOString(),
+      };
+      
+      return result;
+    } catch (error) {
+      console.error("Error fetching fitness data:", error);
+      return null;
+    }
+  },
+  
+  // Check if user has connected their Google Fit account
+  isConnected: async (): Promise<boolean> => {
+    try {
+      const tokens = await getTokensFromSupabase();
+      return !!tokens;
+    } catch (error) {
+      return false;
+    }
+  },
+  
+  // Disconnect Google Fit
+  disconnect: async (): Promise<boolean> => {
+    try {
+      const tokens = await getTokensFromSupabase();
+      
+      if (tokens?.access_token) {
+        // Revoke access token
+        await fetch(`https://oauth2.googleapis.com/revoke?token=${tokens.access_token}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
+        });
+      }
+      
+      // Clear tokens from Supabase
+      const { error } = await supabase
+        .from('fitness_connections')
+        .delete()
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id || '');
+        
+      return !error;
+    } catch (error) {
+      console.error("Error disconnecting from Google Fit:", error);
+      return false;
+    }
+  }
+};
+
+// Helper function to fetch dataset from Google Fit
+async function fetchDatasetFromGoogleFit(
+  accessToken: string,
+  dataType: string,
+  startTimeMillis: number,
+  endTimeMillis: number
+) {
+  const response = await fetch(`${BASE_URL}/dataset:aggregate`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      aggregateBy: [{ dataTypeName: dataType }],
+      bucketByTime: { durationMillis: 86400000 }, // Daily buckets
+      startTimeMillis,
+      endTimeMillis,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Google Fit API error: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// Helper function to process and format data points
+function processDataPoints(
+  apiResponse: any,
+  startTimeMillis: number,
+  days: number
+) {
+  // Create a map for all days in the range
+  const dayMap: Record<string, number> = {};
+  for (let i = 0; i < days; i++) {
+    const date = new Date(startTimeMillis + i * 86400000);
+    const dateStr = date.toISOString().split('T')[0];
+    dayMap[dateStr] = 0;
+  }
+  
+  // Process data points from the API response
+  try {
+    if (apiResponse?.bucket) {
+      for (const bucket of apiResponse.bucket) {
+        if (bucket.dataset?.[0]?.point) {
+          for (const point of bucket.dataset[0].point) {
+            if (point.value?.[0]?.intVal || point.value?.[0]?.fpVal) {
+              const value = point.value[0].intVal || point.value[0].fpVal;
+              const date = new Date(parseInt(bucket.startTimeMillis)).toISOString().split('T')[0];
+              dayMap[date] = (dayMap[date] || 0) + value;
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error processing data points:", error);
+  }
+  
+  // Convert to array format
+  return Object.entries(dayMap).map(([date, value]) => ({ date, value }));
+}
+
+// Save tokens to Supabase
+async function saveTokensToSupabase(tokens: FitnessToken) {
+  const { data: user } = await supabase.auth.getUser();
+  
+  if (!user.user) {
+    throw new Error("User not authenticated");
+  }
+  
+  // Store tokens in Supabase
+  return supabase
+    .from('fitness_connections')
+    .upsert({
+      user_id: user.user.id,
+      provider: 'google_fit',
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.expires_at,
+      updated_at: new Date().toISOString(),
+    });
+}
+
+// Get tokens from Supabase
+async function getTokensFromSupabase(): Promise<FitnessToken | null> {
+  const { data: user } = await supabase.auth.getUser();
+  
+  if (!user.user) {
+    return null;
+  }
+  
+  const { data } = await supabase
+    .from('fitness_connections')
+    .select('access_token, refresh_token, expires_at')
+    .eq('user_id', user.user.id)
+    .eq('provider', 'google_fit')
+    .single();
+    
+  if (!data) {
+    return null;
+  }
+  
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at: data.expires_at,
+  };
+}
+
+// Refresh access token
+async function refreshAccessToken(refreshToken: string): Promise<boolean> {
+  try {
+    const response = await fetch(TOKEN_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        client_id: CLIENT_ID,
+        refresh_token: refreshToken,
+        grant_type: "refresh_token",
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to refresh token");
+    }
+
+    const tokenData = await response.json();
+    const expiresAt = Date.now() + tokenData.expires_in * 1000;
+    
+    // Save the new access token
+    await saveTokensToSupabase({
+      access_token: tokenData.access_token,
+      refresh_token: refreshToken, // Keep the same refresh token
+      expires_at: expiresAt,
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    return false;
+  }
+}
