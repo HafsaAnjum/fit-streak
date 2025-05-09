@@ -30,14 +30,23 @@ export async function getCurrentUser() {
   return user;
 }
 
+// Define specific parameter types for each RPC function
+type RPCParamTypes = {
+  "get_all_milestones": Record<string, never>;
+  "get_user_milestones": { p_user_id: string };
+  "update_milestone_progress": { p_user_id: string; p_type: string; p_value: number };
+  "get_newly_achieved_milestones": { p_user_id: string };
+  "count_completed_workouts": { p_user_id: string };
+  "get_user_fitness_stats": { user_id_param: string };
+}
+
 // Helper function to call RPC safely with proper typing
-export async function callRpc<T = any>(
-  functionName: "get_all_milestones" | "get_user_milestones" | "update_milestone_progress" | 
-                "get_newly_achieved_milestones" | "count_completed_workouts" | "get_user_fitness_stats", 
-  params?: Record<string, any>
+export async function callRpc<T = any, F extends keyof RPCParamTypes = keyof RPCParamTypes>(
+  functionName: F,
+  params?: Partial<RPCParamTypes[F]>
 ): Promise<T[]> {
   try {
-    const { data, error } = await supabase.rpc(functionName, params || {});
+    const { data, error } = await supabase.rpc(functionName as string, params || {});
     
     if (error) {
       console.error(`Error calling RPC ${functionName}:`, error);
