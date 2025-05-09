@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Activity, ArrowRight, CheckCircle2, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { GoogleFitService } from "@/services/GoogleFitService";
+import { toast } from "sonner";
 
 interface FitnessSourceConnectorProps {
   onConnect: (source: string, connected: boolean) => void;
@@ -17,14 +19,24 @@ const FitnessSourceConnector: React.FC<FitnessSourceConnectorProps> = ({ onConne
     setConnecting(source);
     
     try {
-      // In a real implementation, we would initiate OAuth flow here
-      // For this demo, we'll simulate a successful connection after a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (source === 'Google Fit') {
+        // Store the current URL to return after authentication
+        localStorage.setItem("authRedirectUrl", "/onboarding");
+        
+        // Initiate Google Fit OAuth flow
+        GoogleFitService.initiateAuth();
+        return; // We'll return from the callback component
+      }
       
+      // For other providers or as fallback, simulate a connection
+      await new Promise(resolve => setTimeout(resolve, 1500));
       setConnected(source);
       onConnect(source, true);
     } catch (error) {
       console.error(`Error connecting to ${source}:`, error);
+      toast.error(`Failed to connect to ${source}`, {
+        description: "Please try again later"
+      });
     } finally {
       setConnecting(null);
     }

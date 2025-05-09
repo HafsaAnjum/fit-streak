@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,8 +16,12 @@ const WebHealthConnect = () => {
     // Check if fitness service is already connected
     const checkConnections = async () => {
       if (user) {
-        const googleFitStatus = await GoogleFitService.isConnected();
-        setGoogleFitConnected(googleFitStatus);
+        try {
+          const googleFitStatus = await GoogleFitService.isConnected();
+          setGoogleFitConnected(googleFitStatus);
+        } catch (error) {
+          console.error("Error checking Google Fit connection:", error);
+        }
       }
     };
     
@@ -29,6 +32,9 @@ const WebHealthConnect = () => {
     setIsConnecting(true);
     
     try {
+      // Save current URL for redirect after auth
+      localStorage.setItem("authRedirectUrl", window.location.pathname);
+      
       // Redirect to Google OAuth flow
       GoogleFitService.initiateAuth();
     } catch (error) {

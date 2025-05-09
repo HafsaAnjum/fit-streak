@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleFitService } from "@/services/GoogleFitService";
@@ -18,6 +17,8 @@ const GoogleFitCallback = () => {
         const code = urlParams.get("code");
         const error = urlParams.get("error");
         
+        console.log("Processing Google Fit callback with URL:", window.location.href);
+        
         if (error) {
           throw new Error(`Authorization denied: ${error}`);
         }
@@ -25,6 +26,8 @@ const GoogleFitCallback = () => {
         if (!code) {
           throw new Error("No authorization code found in URL");
         }
+        
+        console.log("Authorization code found, processing...");
         
         // Process the authorization code
         const success = await GoogleFitService.handleAuthCallback(code);
@@ -36,6 +39,8 @@ const GoogleFitCallback = () => {
           // Redirect back to the original page or dashboard
           const redirectUrl = localStorage.getItem("authRedirectUrl") || "/";
           localStorage.removeItem("authRedirectUrl");
+          
+          console.log("Authorization successful, redirecting to:", redirectUrl);
           
           // Short delay to show success message
           setTimeout(() => navigate(redirectUrl), 1500);

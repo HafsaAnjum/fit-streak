@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -7,8 +8,8 @@ const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
 // Google Fit OAuth configuration
 // Note: In a production environment, these would ideally be stored securely
-const CLIENT_ID = "971295422527-32emekomivfnbshsfoac8edflnnlekia.apps.googleusercontent.com";
-const CLIENT_SECRET = "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";
+const CLIENT_ID = "971295422527-c2dm5ab5iloirjrann6i31d10kp94lrj.apps.googleusercontent.com";
+const CLIENT_SECRET = "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";
 const REDIRECT_URI = window.location.origin + "/auth/google-fit/callback";
 const SCOPES = [
   "https://www.googleapis.com/auth/fitness.activity.read",
@@ -121,6 +122,7 @@ export const GoogleFitService = {
       // Log what we're doing to help with debugging
       console.log("Initiating Google Fit auth, redirecting to:", authUrl.toString());
       console.log("Redirect URI set to:", REDIRECT_URI);
+      console.log("Using new client ID:", CLIENT_ID);
       
       window.location.href = authUrl.toString();
     } catch (error) {
