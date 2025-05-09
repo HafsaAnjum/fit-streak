@@ -185,7 +185,7 @@ export const WorkoutPlannerService = {
       }
       
       // Create workout plan using the RPC function
-      const { data: planId, error } = await supabase.rpc('create_workout_plan', {
+      const { data: planId, error } = await supabase.rpc('create_workout_plan' as string, {
         p_user_id: user.id,
         p_start_date: startDate.toISOString(),
         p_end_date: endDate.toISOString(),
@@ -219,7 +219,7 @@ export const WorkoutPlannerService = {
       }
       
       // Get the plan with days using the RPC function
-      const { data, error } = await supabase.rpc('get_current_workout_plan', {
+      const { data, error } = await supabase.rpc('get_current_workout_plan' as string, {
         p_user_id: user.id
       }) as unknown as RpcResponse<any[]>;
       
@@ -252,7 +252,7 @@ export const WorkoutPlannerService = {
   // Mark a workout day as completed
   completeWorkoutDay: async (dayId: string, completed = true): Promise<boolean> => {
     try {
-      const { data, error } = await supabase.rpc('complete_workout_day', {
+      const { data, error } = await supabase.rpc('complete_workout_day' as string, {
         p_day_id: dayId,
         p_completed: completed
       }) as unknown as RpcResponse<boolean>;
@@ -280,7 +280,7 @@ export const WorkoutPlannerService = {
       }
       
       // Get today's workout using RPC function
-      const { data, error } = await supabase.rpc('get_todays_workout', {
+      const { data, error } = await supabase.rpc('get_todays_workout' as string, {
         p_user_id: user.id
       }) as unknown as RpcResponse<WorkoutDay>;
       
