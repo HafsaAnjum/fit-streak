@@ -18,15 +18,19 @@ export interface UserMilestone {
   achieved: boolean;
   achieved_at?: string | null;
   progress: number;
-  milestone?: Milestone;
+  milestone_title?: string;
+  milestone_description?: string;
+  milestone_type?: string;
+  milestone_target_value?: number;
+  milestone_icon?: string;
 }
 
 export const MilestoneService = {
   // Get all available milestones
   getAllMilestones: async (): Promise<Milestone[]> => {
     try {
-      // Use raw SQL query instead of the typed client
-      const { data, error } = await supabase.rpc('get_all_milestones') as { data: Milestone[], error: any };
+      // Use RPC function instead of direct table access
+      const { data, error } = await supabase.rpc('get_all_milestones');
       
       if (error) {
         console.error('Error fetching milestones:', error);
@@ -49,10 +53,10 @@ export const MilestoneService = {
         return [];
       }
       
-      // Get user milestones with milestone details
+      // Get user milestones with milestone details using RPC function
       const { data, error } = await supabase.rpc('get_user_milestones', {
         p_user_id: user.id
-      }) as { data: UserMilestone[], error: any };
+      });
       
       if (error) {
         console.error('Error fetching user milestones:', error);
@@ -89,7 +93,7 @@ export const MilestoneService = {
       // Check for newly achieved milestones
       const { data: newlyAchieved } = await supabase.rpc('get_newly_achieved_milestones', {
         p_user_id: user.id
-      }) as { data: Milestone[], error: any };
+      });
       
       // Show achievement notifications
       if (newlyAchieved && newlyAchieved.length > 0) {
@@ -114,12 +118,10 @@ export const MilestoneService = {
         return;
       }
       
-      // Count completed workouts
-      const { count, error } = await supabase
-        .from('workout_days')
-        .select('*', { count: 'exact', head: true })
-        .eq('completed', true)
-        .filter('plan_id.workout_plans.user_id', 'eq', user.id);
+      // Count completed workouts using the RPC function
+      const { data, error } = await supabase.rpc('count_completed_workouts', {
+        p_user_id: user.id
+      });
         
       if (error) {
         console.error('Error counting workouts:', error);
@@ -127,8 +129,8 @@ export const MilestoneService = {
       }
       
       // Update workouts milestone progress
-      if (count !== null) {
-        await MilestoneService.updateMilestoneProgress('workouts', count);
+      if (data !== null) {
+        await MilestoneService.updateMilestoneProgress('workouts', data);
       }
     } catch (error) {
       console.error('Error in checkWorkoutMilestones:', error);

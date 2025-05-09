@@ -124,24 +124,7 @@ export const WorkoutPlannerService = {
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 6);
       
-      // Create workout plan in the database
-      const { data: plan, error: planError } = await supabase
-        .from('workout_plans')
-        .insert({
-          user_id: user.id,
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
-        })
-        .select()
-        .single();
-        
-      if (planError) {
-        console.error('Error creating workout plan:', planError);
-        toast.error('Failed to create workout plan');
-        return null;
-      }
-      
-      // Generate the actual workout days
+      // Generate workout days
       const workoutDays: WorkoutDay[] = [];
       
       // Schedule workouts for each day of the week
@@ -186,33 +169,33 @@ export const WorkoutPlannerService = {
         }
         
         // Create the workout day
-        const workoutDay: WorkoutDay = {
+        workoutDays.push({
           day_date: dayDate.toISOString(),
           workout_type: workoutType,
           duration: duration,
           difficulty: difficulty,
           description: description,
-          plan_id: plan.id
-        };
-        
-        // Save to database
-        const { error: dayError } = await supabase
-          .from('workout_days')
-          .insert(workoutDay);
-          
-        if (dayError) {
-          console.error('Error creating workout day:', dayError);
-          // Continue with the rest of the days
-        } else {
-          workoutDays.push(workoutDay);
-        }
+        });
       }
       
-      // Return the complete plan with days
-      return {
-        ...plan,
-        days: workoutDays
-      };
+      // Create workout plan using the RPC function
+      const { data: planId, error } = await supabase.rpc('create_workout_plan', {
+        p_user_id: user.id,
+        p_start_date: startDate.toISOString(),
+        p_end_date: endDate.toISOString(),
+        p_workout_days: workoutDays
+      });
+      
+      if (error) {
+        console.error('Error creating workout plan:', error);
+        toast.error('Failed to create workout plan');
+        return null;
+      }
+      
+      // Get the complete plan with days
+      const plan = await WorkoutPlannerService.getCurrentPlan();
+      return plan;
+      
     } catch (error) {
       console.error('Error in generating workout plan:', error);
       toast.error('An error occurred when creating your workout plan');
@@ -229,43 +212,30 @@ export const WorkoutPlannerService = {
         return null;
       }
       
-      // Get the most recent plan
-      const { data: plan, error: planError } = await supabase
-        .from('workout_plans')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-        
-      if (planError) {
-        if (planError.code === 'PGRST116') {
-          // No plan found
-          return null;
-        }
-        console.error('Error fetching workout plan:', planError);
+      // Get the plan with days using the RPC function
+      const { data, error } = await supabase.rpc('get_current_workout_plan', {
+        p_user_id: user.id
+      });
+      
+      if (error) {
+        console.error('Error fetching workout plan:', error);
         return null;
       }
       
-      // Get the workout days for this plan
-      const { data: days, error: daysError } = await supabase
-        .from('workout_days')
-        .select('*')
-        .eq('plan_id', plan.id)
-        .order('day_date', { ascending: true });
-        
-      if (daysError) {
-        console.error('Error fetching workout days:', daysError);
-        return {
-          ...plan,
-          days: []
-        };
+      if (!data || data.length === 0) {
+        return null;
       }
       
-      // Return the plan with days
+      // Process the returned data
+      const plan = data[0];
+      
+      // Return the plan
       return {
-        ...plan,
-        days: days
+        id: plan.id,
+        user_id: plan.user_id,
+        start_date: plan.start_date,
+        end_date: plan.end_date,
+        days: plan.days || []
       };
     } catch (error) {
       console.error('Error getting current workout plan:', error);
@@ -276,10 +246,10 @@ export const WorkoutPlannerService = {
   // Mark a workout day as completed
   completeWorkoutDay: async (dayId: string, completed = true): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('workout_days')
-        .update({ completed })
-        .eq('id', dayId);
+      const { data, error } = await supabase.rpc('complete_workout_day', {
+        p_day_id: dayId,
+        p_completed: completed
+      });
         
       if (error) {
         console.error('Error completing workout day:', error);
@@ -287,7 +257,7 @@ export const WorkoutPlannerService = {
         return false;
       }
       
-      return true;
+      return data || false;
     } catch (error) {
       console.error('Error completing workout day:', error);
       return false;
@@ -303,40 +273,17 @@ export const WorkoutPlannerService = {
         return null;
       }
       
-      // Get the current date
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayStr = today.toISOString().split('T')[0];
+      // Get today's workout using RPC function
+      const { data, error } = await supabase.rpc('get_todays_workout', {
+        p_user_id: user.id
+      });
       
-      // Get today's workout from the most recent plan
-      const { data: plan } = await supabase
-        .from('workout_plans')
-        .select('id')
-        .eq('user_id', user.id)
-        .lte('start_date', todayStr)
-        .gte('end_date', todayStr)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-      
-      if (!plan) {
-        return null;
-      }
-      
-      // Get the workout day
-      const { data: workout, error } = await supabase
-        .from('workout_days')
-        .select('*')
-        .eq('plan_id', plan.id)
-        .eq('day_date', todayStr)
-        .single();
-        
-      if (error || !workout) {
+      if (error || !data) {
         console.error('Error fetching today\'s workout:', error);
         return null;
       }
       
-      return workout;
+      return data;
     } catch (error) {
       console.error('Error getting today\'s workout:', error);
       return null;
