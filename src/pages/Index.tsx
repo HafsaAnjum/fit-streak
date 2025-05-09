@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import SEO from "@/components/SEO";
 import GlobalSettingsDialog from "@/components/GlobalSettingsDialog";
 import FeedbackDialog from "@/components/feedback/FeedbackDialog";
 import { SkeletonLoader } from "@/components/ui/skeleton-loader";
+import AIWorkoutPlanner from "@/components/workouts/AIWorkoutPlanner";
 
 const MotionCard = motion(Card);
 
@@ -174,6 +176,15 @@ const Index = () => {
                   </div>
                 </Link>
               </MotionCard>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-8"
+            >
+              <AIWorkoutPlanner />
             </motion.div>
 
             <motion.div

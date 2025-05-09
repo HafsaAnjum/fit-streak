@@ -65,23 +65,23 @@ const WorkoutItem = React.memo(({ workout }: WorkoutItemProps) => {
     <Card className="overflow-hidden border bg-card">
       <div className="p-4">
         <div className="flex justify-between items-start">
-          <div>
+          <div className="flex-1 min-w-0"> {/* Add flex-1 and min-width to prevent text overflow */}
             <h4 className="font-medium truncate flex items-center">
               {workout.name}
               {workout.aiRecommended && (
-                <Badge variant="secondary" className="ml-2 text-[10px] py-0 h-5">
+                <Badge variant="secondary" className="ml-2 text-[10px] py-0 h-5 shrink-0"> {/* Add shrink-0 */}
                   <Sparkles className="h-3 w-3 mr-1" /> AI Pick
                 </Badge>
               )}
             </h4>
             <div className="flex items-center mt-1 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3 mr-1" />
+              <Clock className="h-3 w-3 mr-1 shrink-0" /> {/* Add shrink-0 to icons */}
               <span>{workout.duration}</span>
               <span className="mx-2">•</span>
               <span>{workout.difficulty}</span>
             </div>
           </div>
-          <Link to="/workout-session">
+          <Link to="/workout-session" className="shrink-0"> {/* Add shrink-0 */}
             <Button size="icon" variant="ghost" className="h-7 w-7">
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -120,7 +120,9 @@ const WorkoutPlanner = () => {
             </div>
             <CardTitle className="text-lg font-medium">AI Workout Planner</CardTitle>
           </div>
-          <Button size="sm">New Plan</Button>
+          <Button size="sm" className="shrink-0"> {/* Add shrink-0 to prevent button from shrinking */}
+            New Plan
+          </Button>
         </div>
         <CardDescription>
           Smart workout recommendations based on your activity and goals
@@ -129,7 +131,7 @@ const WorkoutPlanner = () => {
       <CardContent>
         <div className="mb-4">
           <p className="font-medium flex items-center text-sm">
-            <Calendar className="mr-2 h-4 w-4 text-muted-foreground" /> 
+            <Calendar className="mr-2 h-4 w-4 text-muted-foreground shrink-0" /> {/* Add shrink-0 */}
             Today's Recommended Workout
           </p>
         </div>
@@ -143,17 +145,17 @@ const WorkoutPlanner = () => {
         </ScrollArea>
         
         <div className="mt-6 bg-muted/50 rounded-lg p-4 flex items-center">
-          <div className="bg-primary/10 p-2 rounded-full mr-3">
+          <div className="bg-primary/10 p-2 rounded-full mr-3 shrink-0"> {/* Add shrink-0 */}
             <Sparkles className="h-5 w-5 text-primary" />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0"> {/* Add min-width to prevent text overflow */}
             <p className="text-sm font-medium">Connect your health data</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground truncate">
               For personalized AI workout recommendations
             </p>
           </div>
-          <Link to="/fitness">
-            <Button variant="ghost" size="sm" className="shrink-0">
+          <Link to="/fitness" className="ml-2 shrink-0"> {/* Add shrink-0 */}
+            <Button variant="ghost" size="sm">
               Connect
             </Button>
           </Link>
