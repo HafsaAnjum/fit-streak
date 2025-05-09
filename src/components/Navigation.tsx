@@ -1,132 +1,100 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import {
-  HomeIcon,
-  ActivityIcon,
-  ClipboardIcon,
-  BarChartIcon,
-  SettingsIcon,
-  UserIcon,
-  LogInIcon,
-  LogOutIcon,
-} from 'lucide-react';
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Home, Calendar, BarChart2, Settings, Award, User, Activity } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useMobile } from "@/hooks/use-mobile";
 
 const Navigation = () => {
-  const { user, signOut } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
-  };
-
-  // Define the navigation items
+  const { isMobile } = useMobile();
+  
+  if (location.pathname === "/auth" || location.pathname.startsWith("/auth/") || 
+      location.pathname === "/onboarding" || location.pathname.startsWith("/onboarding/")) {
+    return null;
+  }
+  
   const navigationItems = [
-    {
-      title: 'Home',
-      href: '/home',
-      icon: <HomeIcon className="h-5 w-5" />,
-    },
-    {
-      title: 'Workout Session', // Changed from "Workouts" to "Workout Session"
-      href: '/workout-session', // Changed from "/workouts" to "/workout-session"
-      icon: <ActivityIcon className="h-5 w-5" />,
-    },
-    {
-      title: 'Activities',
-      href: '/activities',
-      icon: <ClipboardIcon className="h-5 w-5" />,
-    },
-    {
-      title: 'Analytics',
-      href: '/analytics',
-      icon: <BarChartIcon className="h-5 w-5" />,
-    },
-    {
-      title: 'Settings',
-      href: '/settings',
-      icon: <SettingsIcon className="h-5 w-5" />,
-    },
-    {
-      title: 'Profile',
-      href: '/profile',
-      icon: <UserIcon className="h-5 w-5" />,
-    },
+    { path: "/home", label: "Home", icon: <Home className="h-5 w-5" /> },
+    { path: "/activities", label: "Activities", icon: <Calendar className="h-5 w-5" /> },
+    { path: "/analytics", label: "Analytics", icon: <BarChart2 className="h-5 w-5" /> },
+    { path: "/community", label: "Community", icon: <Award className="h-5 w-5" /> },
+    { path: "/profile", label: "Profile", icon: <User className="h-5 w-5" /> },
   ];
-
-  return (
-    <nav className="bg-background border-b">
-      <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/home" className="font-bold text-xl">
-          Fitness App
-        </Link>
-
-        <div className="hidden md:flex items-center space-x-4">
+  
+  const isActive = (path: string) => {
+    if (path === "/home" && location.pathname === "/") return true;
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+  
+  // Mobile Navigation Bar
+  if (isMobile) {
+    return (
+      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-20">
+        <div className="flex justify-around items-center h-16">
           {navigationItems.map((item) => (
             <Link
-              key={item.title}
-              to={item.href}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-secondary/50 ${
-                location.pathname === item.href ? 'bg-secondary/50 font-medium' : ''
-              }`}
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "flex flex-col items-center justify-center h-full w-full transition-colors",
+                isActive(item.path)
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-primary"
+              )}
             >
               {item.icon}
-              <span>{item.title}</span>
+              <span className="text-[10px] mt-1">{item.label}</span>
             </Link>
           ))}
         </div>
-
-        {user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <UserIcon className="h-4 w-4" />
-                <span className="sr-only">Open user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigate('/profile')}>
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/settings')}>
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut}>
-                <LogOutIcon className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Link to="/auth" className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-secondary/50">
-            <LogInIcon className="h-5 w-5" />
-            <span>Login</span>
+      </nav>
+    );
+  }
+  
+  // Desktop Navigation Bar
+  return (
+    <header className="sticky top-0 z-20 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 max-w-7xl items-center">
+        <div className="mr-4 flex">
+          <Link to="/" className="mr-2 flex items-center">
+            <Activity className="h-6 w-6 text-primary" />
+            <span className="ml-2 text-xl font-bold">FitTrack</span>
           </Link>
-        )}
+        </div>
+        
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <nav className="flex items-center">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "px-4 py-2 text-sm font-medium transition-colors hover:text-primary",
+                  isActive(item.path)
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+            <Link
+              to="/settings"
+              className={cn(
+                "px-4 py-2 text-sm font-medium transition-colors hover:text-primary",
+                isActive("/settings")
+                  ? "text-primary"
+                  : "text-muted-foreground"
+              )}
+            >
+              <span className="sr-only">Settings</span>
+              <Settings className="h-5 w-5" />
+            </Link>
+          </nav>
+        </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
