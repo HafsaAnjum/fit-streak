@@ -115,12 +115,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     
     if (step === totalSteps) {
       // Final step, submit everything
-      try {
-        await handleSubmit();
-      } catch (error) {
-        console.error('Error during submission:', error);
-        toast.error("Failed to complete onboarding. Please try again.");
-      }
+      handleSubmit();
     }
   };
   
@@ -137,7 +132,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     
     // If the user is authenticated, update their profile with minimal data
     if (user) {
-      // Fix the Promise handling with proper chaining
+      // Fix the Promise handling by using simple then chains
       supabase
         .from('profiles')
         .update({
@@ -146,7 +141,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
         })
         .eq('id', user.id)
         .then(() => {
-          // Refresh the profile data using proper promise chaining
+          // Refresh the profile data
           return refreshProfile();
         })
         .then(() => {
@@ -196,49 +191,41 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     }));
   };
 
-  const handleSubmit = async () => {
-    try {
-      // Save user profile data to Supabase
-      if (user) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            username: formData.nickname || user.email?.split('@')[0],
-            full_name: formData.fullName,
-            fitness_level: formData.fitnessLevel || 'beginner', // Ensure a default value
-            fitness_goal: formData.fitnessGoal || 'general fitness',
-            workout_type: formData.workoutType || 'mixed',
-            age: formData.age ? parseInt(formData.age) : null,
-            height: formData.height ? parseFloat(formData.height) : null,
-            weight: formData.weight ? parseFloat(formData.weight) : null,
-            gender: formData.gender || 'prefer_not_to_say',
-            preferred_workout_time: formData.workoutTime || 'anytime',
-            data_source: formData.dataSourceType || 'none',
-            allow_notifications: formData.allowNotifications
-          })
-          .eq('id', user.id);
-          
-        if (error) {
-          console.error('Error saving profile:', error);
-          toast.error("Failed to save your profile");
-          return;
-        }
-      }
-      
-      toast.success("Profile set up successfully!");
-      
-      // Fixed promise handling using proper async/await pattern
-      try {
-        await refreshProfile();
-        onComplete(); // This will trigger navigation to the home page
-      } catch (refreshError) {
-        console.error('Error refreshing profile:', refreshError);
-        // Even if refreshing fails, still complete onboarding
-        onComplete();
-      }
-    } catch (error) {
-      console.error('Error in onboarding submission:', error);
-      toast.error("Something went wrong. Please try again.");
+  const handleSubmit = () => {
+    // Save user profile data to Supabase
+    if (user) {
+      supabase
+        .from('profiles')
+        .update({
+          username: formData.nickname || user.email?.split('@')[0],
+          full_name: formData.fullName,
+          fitness_level: formData.fitnessLevel || 'beginner', // Ensure a default value
+          fitness_goal: formData.fitnessGoal || 'general fitness',
+          workout_type: formData.workoutType || 'mixed',
+          age: formData.age ? parseInt(formData.age) : null,
+          height: formData.height ? parseFloat(formData.height) : null,
+          weight: formData.weight ? parseFloat(formData.weight) : null,
+          gender: formData.gender || 'prefer_not_to_say',
+          preferred_workout_time: formData.workoutTime || 'anytime',
+          data_source: formData.dataSourceType || 'none',
+          allow_notifications: formData.allowNotifications
+        })
+        .eq('id', user.id)
+        .then(() => {
+          toast.success("Profile set up successfully!");
+          return refreshProfile();
+        })
+        .then(() => {
+          onComplete(); // This will trigger navigation to the home page
+        })
+        .catch(error => {
+          console.error('Error in onboarding submission:', error);
+          toast.error("Something went wrong. Please try again.");
+        });
+    } else {
+      // No user, just complete onboarding
+      toast.success("Setup completed!");
+      onComplete();
     }
   };
 
