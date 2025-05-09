@@ -18,7 +18,7 @@ export const useOnboardingRedirect = () => {
         // Check if the user has completed onboarding
         const { data, error } = await supabase
           .from('profiles')
-          .select('username, fullName, fitness_level')
+          .select('username, fitness_level')
           .eq('id', user.id)
           .single();
           
@@ -28,7 +28,7 @@ export const useOnboardingRedirect = () => {
         }
         
         // If user has missing profile fields, redirect to onboarding
-        const needsOnboarding = !data.username || !data.fullName || !data.fitness_level;
+        const needsOnboarding = !data.username || !data.fitness_level;
         
         if (needsOnboarding) {
           navigate('/onboarding');

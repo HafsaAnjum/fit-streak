@@ -23,10 +23,14 @@ const WebHealthConnect = () => {
       // Simulate successful connection
       if (user) {
         // Update user profile with connection status
-        await supabase
+        const { error } = await supabase
           .from('profiles')
-          .update({ health_connected: true })
+          .update({ fitness_level: 'connected' }) // Using fitness_level instead of health_connected
           .eq('id', user.id);
+          
+        if (error) {
+          throw error;
+        }
       }
       
       toast.success("Health services connected!", {
