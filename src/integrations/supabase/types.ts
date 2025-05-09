@@ -147,6 +147,48 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_sessions: {
+        Row: {
+          activity_type: string
+          calories_burned: number
+          completed: boolean
+          created_at: string | null
+          duration: number
+          end_time: string | null
+          heart_rate: number | null
+          id: string
+          start_time: string
+          steps: number
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          calories_burned?: number
+          completed?: boolean
+          created_at?: string | null
+          duration?: number
+          end_time?: string | null
+          heart_rate?: number | null
+          id?: string
+          start_time?: string
+          steps?: number
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          calories_burned?: number
+          completed?: boolean
+          created_at?: string | null
+          duration?: number
+          end_time?: string | null
+          heart_rate?: number | null
+          id?: string
+          start_time?: string
+          steps?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       workouts: {
         Row: {
           calories: number | null
