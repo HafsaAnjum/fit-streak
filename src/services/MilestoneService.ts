@@ -30,7 +30,7 @@ export const MilestoneService = {
   getAllMilestones: async (): Promise<Milestone[]> => {
     try {
       // Use RPC function instead of direct table access
-      const { data, error } = await supabase.rpc('get_all_milestones') as {
+      const { data, error } = await supabase.rpc('get_all_milestones', {}) as unknown as {
         data: Milestone[] | null;
         error: any;
       };
@@ -59,7 +59,7 @@ export const MilestoneService = {
       // Get user milestones with milestone details using RPC function
       const { data, error } = await supabase.rpc('get_user_milestones', {
         p_user_id: user.id
-      }) as {
+      }) as unknown as {
         data: UserMilestone[] | null;
         error: any;
       };
@@ -90,7 +90,7 @@ export const MilestoneService = {
         p_user_id: user.id,
         p_type: type,
         p_value: value
-      }) as {
+      }) as unknown as {
         data: null;
         error: any;
       };
@@ -102,7 +102,7 @@ export const MilestoneService = {
       // Check for newly achieved milestones
       const { data: newlyAchieved } = await supabase.rpc('get_newly_achieved_milestones', {
         p_user_id: user.id
-      }) as {
+      }) as unknown as {
         data: Milestone[] | null;
         error: any;
       };
@@ -133,7 +133,7 @@ export const MilestoneService = {
       // Count completed workouts using the RPC function
       const { data, error } = await supabase.rpc('count_completed_workouts', {
         p_user_id: user.id
-      }) as {
+      }) as unknown as {
         data: number | null;
         error: any;
       };
