@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Calendar, BarChart2, Settings, Award, User, Activity, UserCircle } from "lucide-react";
+import { Home, Calendar, BarChart2, Settings, Award, User, Activity, UserCircle, Dumbbell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/context/AuthContext";
@@ -18,14 +18,15 @@ const Navigation = () => {
   
   const navigationItems = [
     { path: "/home", label: "Home", icon: <Home className="h-5 w-5" /> },
+    { path: "/workouts", label: "Workouts", icon: <Dumbbell className="h-5 w-5" /> },
     { path: "/activities", label: "Activities", icon: <Calendar className="h-5 w-5" /> },
     { path: "/analytics", label: "Analytics", icon: <BarChart2 className="h-5 w-5" /> },
     { path: "/community", label: "Community", icon: <Award className="h-5 w-5" /> },
-    { path: "/profile", label: "Profile", icon: <User className="h-5 w-5" /> },
   ];
   
   const isActive = (path: string) => {
     if (path === "/home" && location.pathname === "/") return true;
+    if (path === "/workouts" && (location.pathname === "/workouts" || location.pathname.startsWith("/workout/"))) return true;
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
   
