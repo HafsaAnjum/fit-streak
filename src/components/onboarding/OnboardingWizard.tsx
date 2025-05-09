@@ -145,6 +145,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     
     // If the user is authenticated, update their profile with minimal data
     if (user) {
+      // Use Promise chaining with proper error handling
       supabase
         .from('profiles')
         .update({
@@ -154,10 +155,11 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
         .eq('id', user.id)
         .then(() => {
           // Refresh the profile data
-          refreshProfile().then(() => {
-            // Complete onboarding
-            onComplete();
-          });
+          return refreshProfile();
+        })
+        .then(() => {
+          // Complete onboarding
+          onComplete();
         })
         .catch(error => {
           console.error('Error updating profile during skip:', error);
@@ -232,6 +234,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
       }
       
       toast.success("Profile set up successfully!");
+      
       try {
         await refreshProfile();
         onComplete(); // This will trigger navigation to the home page
