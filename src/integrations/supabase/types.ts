@@ -48,6 +48,36 @@ export type Database = {
         }
         Relationships: []
       }
+      fitness_connections: {
+        Row: {
+          access_token: string
+          expires_at: number
+          id: string
+          provider: string
+          refresh_token: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          expires_at: number
+          id?: string
+          provider: string
+          refresh_token: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          expires_at?: number
+          id?: string
+          provider?: string
+          refresh_token?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

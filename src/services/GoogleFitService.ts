@@ -30,6 +30,62 @@ interface FitnessData {
   lastSynced: string;
 }
 
+// Direct database access functions
+async function getTokensFromDb(userId: string, provider: string): Promise<FitnessToken | null> {
+  const { data, error } = await supabase
+    .from('fitness_connections')
+    .select('access_token, refresh_token, expires_at')
+    .eq('user_id', userId)
+    .eq('provider', provider)
+    .maybeSingle();
+    
+  if (error || !data) {
+    console.error("Error getting tokens:", error);
+    return null;
+  }
+  
+  return data as FitnessToken;
+}
+
+async function saveTokensToDb(
+  userId: string, 
+  provider: string, 
+  tokens: FitnessToken
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('fitness_connections')
+    .upsert({
+      user_id: userId,
+      provider: provider,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.expires_at,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id,provider' });
+    
+  if (error) {
+    console.error("Error saving tokens:", error);
+    return false;
+  }
+  
+  return true;
+}
+
+async function deleteTokensFromDb(userId: string, provider: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('fitness_connections')
+    .delete()
+    .eq('user_id', userId)
+    .eq('provider', provider);
+    
+  if (error) {
+    console.error("Error deleting tokens:", error);
+    return false;
+  }
+  
+  return true;
+}
+
 export const GoogleFitService = {
   // Initiate OAuth flow
   initiateAuth: () => {
@@ -71,14 +127,26 @@ export const GoogleFitService = {
       const tokenData = await tokenResponse.json();
       const expiresAt = Date.now() + tokenData.expires_in * 1000;
       
-      // Save tokens to Supabase for the current user
-      const { error } = await saveTokensToSupabase({
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        expires_at: expiresAt,
-      });
-
-      if (error) throw error;
+      // Get current user
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        throw new Error("User not authenticated");
+      }
+      
+      // Save tokens
+      const saved = await saveTokensToDb(
+        user.user.id,
+        'google_fit',
+        {
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token,
+          expires_at: expiresAt,
+        }
+      );
+      
+      if (!saved) {
+        throw new Error("Failed to save tokens");
+      }
       
       return true;
     } catch (error) {
@@ -90,15 +158,21 @@ export const GoogleFitService = {
   // Fetch fitness data from Google Fit API
   getFitnessData: async (days = 7): Promise<FitnessData | null> => {
     try {
+      // Get current user
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        throw new Error("User not authenticated");
+      }
+      
       // Get tokens from storage
-      const tokens = await getTokensFromSupabase();
+      const tokens = await getTokensFromDb(user.user.id, 'google_fit');
       if (!tokens) {
         throw new Error("No tokens available");
       }
 
       // Check if token is expired
       if (tokens.expires_at < Date.now()) {
-        const refreshed = await refreshAccessToken(tokens.refresh_token);
+        const refreshed = await refreshAccessToken(tokens.refresh_token, user.user.id);
         if (!refreshed) {
           throw new Error("Failed to refresh token");
         }
@@ -163,7 +237,12 @@ export const GoogleFitService = {
   // Check if user has connected their Google Fit account
   isConnected: async (): Promise<boolean> => {
     try {
-      const tokens = await getTokensFromSupabase();
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        return false;
+      }
+      
+      const tokens = await getTokensFromDb(user.user.id, 'google_fit');
       return !!tokens;
     } catch (error) {
       return false;
@@ -173,7 +252,12 @@ export const GoogleFitService = {
   // Disconnect Google Fit
   disconnect: async (): Promise<boolean> => {
     try {
-      const tokens = await getTokensFromSupabase();
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        return false;
+      }
+      
+      const tokens = await getTokensFromDb(user.user.id, 'google_fit');
       
       if (tokens?.access_token) {
         // Revoke access token
@@ -185,27 +269,8 @@ export const GoogleFitService = {
         });
       }
       
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return false;
-
-      // Clear tokens from Supabase using a custom RPC function or raw SQL
-      // Since we can't directly use 'fitness_connections' yet in the types
-      const { error } = await supabase.rpc('delete_fitness_connection', { 
-        p_user_id: user.user.id,
-        p_provider: 'google_fit'
-      });
-      
-      if (error) {
-        // Fallback approach using raw SQL
-        const { error: sqlError } = await supabase.from('fitness_connections')
-          .delete()
-          .eq('user_id', user.user.id)
-          .eq('provider', 'google_fit');
-          
-        if (sqlError) throw sqlError;
-      }
-        
-      return true;
+      // Delete tokens from database
+      return await deleteTokensFromDb(user.user.id, 'google_fit');
     } catch (error) {
       console.error("Error disconnecting from Google Fit:", error);
       return false;
@@ -278,85 +343,8 @@ function processDataPoints(
   return Object.entries(dayMap).map(([date, value]) => ({ date, value }));
 }
 
-// Save tokens to Supabase
-async function saveTokensToSupabase(tokens: FitnessToken) {
-  const { data: user } = await supabase.auth.getUser();
-  
-  if (!user.user) {
-    throw new Error("User not authenticated");
-  }
-  
-  // Use raw SQL approach to insert or update tokens
-  // This is a workaround until the Supabase types are updated
-  const { data, error } = await supabase.rpc('upsert_fitness_connection', {
-    p_user_id: user.user.id,
-    p_provider: 'google_fit',
-    p_access_token: tokens.access_token,
-    p_refresh_token: tokens.refresh_token,
-    p_expires_at: tokens.expires_at
-  });
-
-  if (error) {
-    console.log("Falling back to direct SQL due to RPC error:", error);
-    
-    // Try direct upsert as fallback
-    return await supabase.from('fitness_connections').upsert({
-      user_id: user.user.id,
-      provider: 'google_fit',
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_at: tokens.expires_at,
-      updated_at: new Date().toISOString(),
-    });
-  }
-  
-  return { data, error: null };
-}
-
-// Get tokens from Supabase
-async function getTokensFromSupabase(): Promise<FitnessToken | null> {
-  const { data: user } = await supabase.auth.getUser();
-  
-  if (!user.user) {
-    return null;
-  }
-  
-  // Use a stored procedure call as a workaround
-  const { data, error } = await supabase.rpc('get_fitness_connection', {
-    p_user_id: user.user.id,
-    p_provider: 'google_fit'
-  });
-  
-  if (error || !data) {
-    console.log("Falling back to direct SQL due to RPC error:", error);
-    
-    // Fallback to raw SQL query
-    const { data: connections } = await supabase.from('fitness_connections')
-      .select('access_token, refresh_token, expires_at')
-      .eq('user_id', user.user.id)
-      .eq('provider', 'google_fit')
-      .maybeSingle();
-      
-    if (!connections) {
-      return null;
-    }
-    
-    return {
-      access_token: connections.access_token,
-      refresh_token: connections.refresh_token,
-      expires_at: connections.expires_at,
-    };
-  }
-  
-  return {
-    access_token: data.access_token,
-    refresh_token: data.refresh_token,
-    expires_at: data.expires_at,
-  };
-}
-
 // Refresh access token
-async function refreshAccessToken(refreshToken: string): Promise<boolean> {
+async function refreshAccessToken(refreshToken: string, userId: string): Promise<boolean> {
   try {
     const response = await fetch(TOKEN_ENDPOINT, {
       method: "POST",
@@ -378,11 +366,15 @@ async function refreshAccessToken(refreshToken: string): Promise<boolean> {
     const expiresAt = Date.now() + tokenData.expires_in * 1000;
     
     // Save the new access token
-    await saveTokensToSupabase({
-      access_token: tokenData.access_token,
-      refresh_token: refreshToken, // Keep the same refresh token
-      expires_at: expiresAt,
-    });
+    await saveTokensToDb(
+      userId,
+      'google_fit',
+      {
+        access_token: tokenData.access_token,
+        refresh_token: refreshToken, // Keep the same refresh token
+        expires_at: expiresAt,
+      }
+    );
     
     return true;
   } catch (error) {

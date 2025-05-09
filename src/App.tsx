@@ -1,107 +1,54 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useState, useEffect } from "react";
-import { FullPageLoader } from "@/components/LoadingSpinner";
-import Index from "./pages/Index";
-import WorkoutsPage from "./pages/WorkoutsPage";
-import ProfilePage from "./pages/ProfilePage";
-import ActivitiesPage from "./pages/ActivitiesPage";
-import NotFound from "./pages/NotFound";
-import AuthPage from "./pages/AuthPage";
-import ChatButton from "@/components/ChatButton";
-import OnboardingPage from "./pages/OnboardingPage";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Navigation from "@/components/Navigation";
+import WorkoutPlanner from "@/components/WorkoutPlanner";
+import ActivityTracker from "@/components/ActivityTracker";
+import AnalyticsDashboard from "@/components/AnalyticsDashboard";
+import Settings from "@/components/Settings";
+import UserProfile from "@/components/UserProfile";
+import AuthPage from "@/pages/AuthPage";
+import OnboardingPage from "@/pages/OnboardingPage";
+import NotFound from "@/pages/NotFound";
+import Index from "@/pages/Index";
 import GoogleFitCallback from "@/components/GoogleFitCallback";
+import FitbitCallback from "@/components/FitbitCallback";
+import FitnessDashboard from "@/components/dashboard/FitnessDashboard";
+import "./App.css";
 
-const queryClient = new QueryClient();
-
-const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Simulate initial loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <FullPageLoader />;
-  }
-
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <AuthProvider>
+      <Router>
+        <div className="flex flex-col min-h-screen">
+          <Navigation />
+          <main className="container mx-auto px-4 py-8 flex-1">
             <Routes>
-              <Route path="/auth" element={<AuthPage />} />
-              <Route 
-                path="/" 
-                element={
-                  <ProtectedRoute>
-                    <Index />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/workouts" 
-                element={
-                  <ProtectedRoute>
-                    <WorkoutsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/activities" 
-                element={
-                  <ProtectedRoute>
-                    <ActivitiesPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/onboarding" 
-                element={
-                  <ProtectedRoute>
-                    <OnboardingPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/auth/google-fit/callback" 
-                element={
-                  <ProtectedRoute>
-                    <GoogleFitCallback />
-                  </ProtectedRoute>
-                } 
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/" element={<Index />} />
+              <Route path="/auth/*" element={<AuthPage />} />
+              <Route path="/onboarding/*" element={<OnboardingPage />} />
+              
+              {/* Protected routes */}
+              <Route path="/workouts" element={<ProtectedRoute><WorkoutPlanner /></ProtectedRoute>} />
+              <Route path="/activities" element={<ProtectedRoute><ActivityTracker /></ProtectedRoute>} />
+              <Route path="/analytics" element={<ProtectedRoute><AnalyticsDashboard /></ProtectedRoute>} />
+              <Route path="/fitness" element={<ProtectedRoute><FitnessDashboard /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+              
+              {/* OAuth callback routes */}
+              <Route path="/auth/google-fit/callback" element={<GoogleFitCallback />} />
+              <Route path="/auth/fitbit/callback" element={<FitbitCallback />} />
+              
+              {/* 404 page */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <ChatButton />
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+          </main>
+        </div>
+      </Router>
+    </AuthProvider>
   );
-};
+}
 
 export default App;

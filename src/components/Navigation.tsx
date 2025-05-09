@@ -1,70 +1,113 @@
 
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Activity, User, Dumbbell, Home } from "lucide-react";
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, Home, CalendarCheck, BarChart2, Settings, User, Dumbbell, Heart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useAuth } from '@/context/AuthContext';
+import { useMobile } from '@/hooks/use-mobile';
 
 const Navigation = () => {
+  const { user, signOut } = useAuth();
   const location = useLocation();
-  const [showLabels, setShowLabels] = useState(true);
+  const isMobile = useMobile();
+  const [open, setOpen] = useState(false);
+
+  const closeSheet = () => setOpen(false);
+
+  const navLinks = [
+    { name: 'Home', path: '/', icon: <Home className="h-5 w-5" /> },
+    { name: 'Workouts', path: '/workouts', icon: <Dumbbell className="h-5 w-5" /> },
+    { name: 'Activities', path: '/activities', icon: <CalendarCheck className="h-5 w-5" /> },
+    { name: 'Analytics', path: '/analytics', icon: <BarChart2 className="h-5 w-5" /> },
+    { name: 'Fitness', path: '/fitness', icon: <Heart className="h-5 w-5" /> },
+    { name: 'Settings', path: '/settings', icon: <Settings className="h-5 w-5" /> },
+    { name: 'Profile', path: '/profile', icon: <User className="h-5 w-5" /> },
+  ];
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  const renderNavLinks = () => {
+    return navLinks.map((link) => {
+      // Skip protected routes if user is not logged in
+      if (!user && link.path !== '/') {
+        return null;
+      }
+      
+      return (
+        <li key={link.name}>
+          <Link
+            to={link.path}
+            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+              isActive(link.path)
+                ? 'bg-primary text-primary-foreground'
+                : 'hover:bg-muted'
+            }`}
+            onClick={closeSheet}
+          >
+            {link.icon}
+            <span className="ml-3">{link.name}</span>
+          </Link>
+        </li>
+      );
+    });
+  };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-around bg-background border-t p-2 md:hidden">
-      <NavItem 
-        to="/" 
-        icon={<Home className="h-6 w-6" />} 
-        label="Home" 
-        isActive={location.pathname === '/'} 
-        showLabel={showLabels} 
-      />
-      <NavItem 
-        to="/activities" 
-        icon={<Activity className="h-6 w-6" />} 
-        label="Activity" 
-        isActive={location.pathname === '/activities'} 
-        showLabel={showLabels} 
-      />
-      <NavItem 
-        to="/workouts" 
-        icon={<Dumbbell className="h-6 w-6" />} 
-        label="Workouts" 
-        isActive={location.pathname === '/workouts'} 
-        showLabel={showLabels} 
-      />
-      <NavItem 
-        to="/profile" 
-        icon={<User className="h-6 w-6" />} 
-        label="Profile" 
-        isActive={location.pathname === '/profile'} 
-        showLabel={showLabels} 
-      />
-    </div>
-  );
-};
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        {/* Mobile menu */}
+        {isMobile ? (
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="mr-2">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[240px] sm:w-[300px]">
+              <div className="px-2 py-6">
+                <Link to="/" className="flex items-center mb-6" onClick={closeSheet}>
+                  <span className="text-xl font-bold">FitTrack</span>
+                </Link>
+                <nav>
+                  <ul className="space-y-2">{renderNavLinks()}</ul>
+                </nav>
+              </div>
+            </SheetContent>
+          </Sheet>
+        ) : null}
 
-interface NavItemProps {
-  to: string;
-  icon: React.ReactNode;
-  label: string;
-  isActive: boolean;
-  showLabel: boolean;
-}
+        {/* Logo */}
+        <Link to="/" className="flex items-center mr-4 space-x-2">
+          <span className="font-bold text-xl">FitTrack</span>
+        </Link>
 
-const NavItem = ({ to, icon, label, isActive, showLabel }: NavItemProps) => {
-  return (
-    <Link to={to} className="flex-1">
-      <Button 
-        variant="ghost" 
-        className={cn(
-          "w-full flex flex-col items-center justify-center h-auto py-1 px-1",
-          isActive ? "text-primary" : "text-muted-foreground"
+        {/* Desktop navigation */}
+        {!isMobile && (
+          <nav className="flex-1 mx-4">
+            <ul className="flex space-x-1">
+              {renderNavLinks()}
+            </ul>
+          </nav>
         )}
-      >
-        {icon}
-        {showLabel && <span className="text-xs mt-1">{label}</span>}
-      </Button>
-    </Link>
+
+        {/* Auth buttons */}
+        <div className="flex items-center space-x-2">
+          {!user ? (
+            <Link to="/auth">
+              <Button>Sign In</Button>
+            </Link>
+          ) : (
+            <Button variant="ghost" onClick={signOut}>
+              Sign Out
+            </Button>
+          )}
+        </div>
+      </div>
+    </header>
   );
 };
 
