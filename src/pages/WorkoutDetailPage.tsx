@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 // Sample workout details
 const workoutDetails = {
-  1: {
+  "1": {
     id: 1,
     name: "Full Body HIIT",
     duration: "30 min",
@@ -29,7 +29,7 @@ const workoutDetails = {
       { name: "Plank Jacks", duration: "45 seconds", rest: "15 seconds", sets: 3 },
     ]
   },
-  2: {
+  "2": {
     id: 2,
     name: "Upper Body Strength",
     duration: "45 min",
@@ -58,8 +58,8 @@ const WorkoutDetailPage = () => {
   useEffect(() => {
     // Simulate API fetch
     setTimeout(() => {
-      if (workoutId && workoutDetails[workoutId as keyof typeof workoutDetails]) {
-        setWorkout(workoutDetails[workoutId as keyof typeof workoutDetails]);
+      if (workoutId && workoutDetails[workoutId]) {
+        setWorkout(workoutDetails[workoutId]);
       }
       setLoading(false);
     }, 800);
