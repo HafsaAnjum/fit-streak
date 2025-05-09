@@ -13,7 +13,6 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
 import GoogleFitCallback from "@/components/GoogleFitCallback";
-import FitbitCallback from "@/components/FitbitCallback";
 import FitnessDashboard from "@/components/dashboard/FitnessDashboard";
 import "./App.css";
 
@@ -37,9 +36,8 @@ function App() {
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
               
-              {/* OAuth callback routes */}
+              {/* OAuth callback route */}
               <Route path="/auth/google-fit/callback" element={<GoogleFitCallback />} />
-              <Route path="/auth/fitbit/callback" element={<FitbitCallback />} />
               
               {/* 404 page */}
               <Route path="*" element={<NotFound />} />

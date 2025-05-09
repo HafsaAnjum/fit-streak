@@ -7,23 +7,18 @@ import { Activity, Info, CheckCircle, AlertCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
 import { GoogleFitService } from "@/services/GoogleFitService";
-import { FitbitService } from "@/services/FitbitService";
 
 const WebHealthConnect = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [googleFitConnected, setGoogleFitConnected] = useState(false);
-  const [fitbitConnected, setFitbitConnected] = useState(false);
   const { user } = useAuth();
   
   useEffect(() => {
-    // Check if fitness services are already connected
+    // Check if fitness service is already connected
     const checkConnections = async () => {
       if (user) {
         const googleFitStatus = await GoogleFitService.isConnected();
         setGoogleFitConnected(googleFitStatus);
-        
-        const fitbitStatus = await FitbitService.isConnected();
-        setFitbitConnected(fitbitStatus);
       }
     };
     
@@ -67,43 +62,6 @@ const WebHealthConnect = () => {
     }
   };
   
-  const connectToFitbit = async () => {
-    setIsConnecting(true);
-    
-    try {
-      // Redirect to Fitbit OAuth flow
-      FitbitService.initiateAuth();
-    } catch (error) {
-      console.error("Failed to connect to Fitbit:", error);
-      toast.error("Failed to initiate Fitbit connection", {
-        description: "Please try again or connect manually in settings",
-      });
-      setIsConnecting(false);
-    }
-  };
-  
-  const disconnectFitbit = async () => {
-    setIsConnecting(true);
-    
-    try {
-      const success = await FitbitService.disconnect();
-      
-      if (success) {
-        setFitbitConnected(false);
-        toast.success("Successfully disconnected from Fitbit");
-      } else {
-        throw new Error("Failed to disconnect Fitbit");
-      }
-    } catch (error) {
-      console.error("Failed to disconnect from Fitbit:", error);
-      toast.error("Failed to disconnect", {
-        description: "Please try again later",
-      });
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-  
   return (
     <Card className="border border-primary/10">
       <CardHeader className="bg-gradient-to-r from-blue-500/10 to-green-500/10">
@@ -114,7 +72,7 @@ const WebHealthConnect = () => {
       </CardHeader>
       <CardContent className="pt-4">
         <p className="text-sm text-muted-foreground mb-4">
-          Connect to a fitness service to automatically sync your activity data and view detailed fitness analytics.
+          Connect to Google Fit to automatically sync your activity data and view detailed fitness analytics.
         </p>
         
         <div className="flex flex-col space-y-3">
@@ -162,51 +120,6 @@ const WebHealthConnect = () => {
             </div>
           </Card>
           
-          {/* Fitbit Card */}
-          <Card className={`p-4 border ${fitbitConnected ? 'border-green-500' : 'border-border'}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center mr-3">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 8V16" stroke="#00B0B9" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M12 6V18" stroke="#00B0B9" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M8 10V14" stroke="#00B0B9" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#00B0B9" strokeWidth="2" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium">Fitbit</h3>
-                  <p className="text-xs text-muted-foreground">Heart rate, sleep, steps & more</p>
-                </div>
-              </div>
-              
-              {fitbitConnected ? (
-                <div className="flex items-center">
-                  <div className="flex items-center text-green-500 mr-4">
-                    <CheckCircle className="h-5 w-5 mr-1" />
-                    <span className="text-sm font-medium">Connected</span>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={disconnectFitbit}
-                    disabled={isConnecting}
-                  >
-                    Disconnect
-                  </Button>
-                </div>
-              ) : (
-                <Button 
-                  size="sm" 
-                  onClick={connectToFitbit}
-                  disabled={isConnecting}
-                >
-                  {isConnecting ? 'Connecting...' : 'Connect'}
-                </Button>
-              )}
-            </div>
-          </Card>
-          
           <div className="flex flex-col space-y-3 mt-4">
             <div className="flex justify-between items-center">
               <Dialog>
@@ -225,7 +138,7 @@ const WebHealthConnect = () => {
                   </DialogHeader>
                   <div className="space-y-4 mt-4">
                     <p className="text-sm">
-                      When you connect a fitness service, we request access to:
+                      When you connect Google Fit, we request access to:
                     </p>
                     <ul className="list-disc list-inside text-sm space-y-2">
                       <li>Daily activity summaries</li>
@@ -233,11 +146,10 @@ const WebHealthConnect = () => {
                       <li>Calories burned</li>
                       <li>Activity duration</li>
                       <li>Heart rate (when available)</li>
-                      <li>Sleep data (when available)</li>
                     </ul>
                     <p className="text-sm text-muted-foreground">
                       Your data is securely stored and only used to provide personalized fitness insights.
-                      You can disconnect these services at any time.
+                      You can disconnect this service at any time.
                     </p>
                   </div>
                 </DialogContent>

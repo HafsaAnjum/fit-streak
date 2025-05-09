@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { Footprints, Flame, Activity, Award, Heart, Trophy, Star } from "lucide-react";
+import { Footprints, Flame, Activity, Award, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useFitnessData } from "@/hooks/useFitnessData";
@@ -133,7 +133,7 @@ const FitnessDataDashboard = () => {
         title: "70K Steps Club",
         description: "Reached 70,000 steps in a week",
         date: new Date().toLocaleDateString(),
-        icon: <Trophy className="h-5 w-5 text-amber-500" />,
+        icon: <Award className="h-5 w-5 text-amber-500" />,
         color: "bg-amber-100",
         highlight: true
       });
@@ -155,7 +155,7 @@ const FitnessDataDashboard = () => {
         title: "Step Champion",
         description: `Achieved ${maxStepsDay.value.toLocaleString()} steps in a single day`,
         date,
-        icon: <Star className="h-5 w-5 text-purple-500" />,
+        icon: <Award className="h-5 w-5 text-purple-500" />,
         color: "bg-purple-100"
       });
     }

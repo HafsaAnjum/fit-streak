@@ -35,6 +35,7 @@ export const useFitnessData = (options: UseFitnessDataOptions = {}) => {
       
       if (!connected) {
         setData(null);
+        setLoading(false);
         return;
       }
       
@@ -59,6 +60,9 @@ export const useFitnessData = (options: UseFitnessDataOptions = {}) => {
   useEffect(() => {
     if (user) {
       fetchFitnessData();
+    } else {
+      setIsConnected(false);
+      setData(null);
     }
   }, [user, days]);
   

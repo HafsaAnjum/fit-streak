@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Activity, BarChart, Cog, Home, UserCircle, Menu } from 'lucide-react';
@@ -16,12 +17,12 @@ const Navigation = () => {
 
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home className="h-5 w-5" /> },
-    { name: 'Workouts', path: '/workouts', icon: <Dumbbell className="h-5 w-5" /> },
-    { name: 'Activities', path: '/activities', icon: <CalendarCheck className="h-5 w-5" /> },
-    { name: 'Analytics', path: '/analytics', icon: <BarChart2 className="h-5 w-5" /> },
-    { name: 'Fitness', path: '/fitness', icon: <Heart className="h-5 w-5" /> },
-    { name: 'Settings', path: '/settings', icon: <Settings className="h-5 w-5" /> },
-    { name: 'Profile', path: '/profile', icon: <User className="h-5 w-5" /> },
+    { name: 'Workouts', path: '/workouts', icon: <Activity className="h-5 w-5" /> },
+    { name: 'Activities', path: '/activities', icon: <Activity className="h-5 w-5" /> },
+    { name: 'Analytics', path: '/analytics', icon: <BarChart className="h-5 w-5" /> },
+    { name: 'Fitness', path: '/fitness', icon: <Activity className="h-5 w-5" /> },
+    { name: 'Settings', path: '/settings', icon: <Cog className="h-5 w-5" /> },
+    { name: 'Profile', path: '/profile', icon: <UserCircle className="h-5 w-5" /> },
   ];
 
   const isActive = (path: string) => {
