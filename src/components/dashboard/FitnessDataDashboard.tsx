@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { Footprints, Flame, Activity, Award, Heart } from "lucide-react";
+import { Footprints, Flame, Activity, Award, Heart, Trophy, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useFitnessData } from "@/hooks/useFitnessData";

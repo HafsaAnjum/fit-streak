@@ -185,13 +185,27 @@ export const GoogleFitService = {
         });
       }
       
-      // Clear tokens from Supabase
-      const { error } = await supabase
-        .from('fitness_connections')
-        .delete()
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id || '');
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return false;
+
+      // Clear tokens from Supabase using a custom RPC function or raw SQL
+      // Since we can't directly use 'fitness_connections' yet in the types
+      const { error } = await supabase.rpc('delete_fitness_connection', { 
+        p_user_id: user.user.id,
+        p_provider: 'google_fit'
+      });
+      
+      if (error) {
+        // Fallback approach using raw SQL
+        const { error: sqlError } = await supabase.from('fitness_connections')
+          .delete()
+          .eq('user_id', user.user.id)
+          .eq('provider', 'google_fit');
+          
+        if (sqlError) throw sqlError;
+      }
         
-      return !error;
+      return true;
     } catch (error) {
       console.error("Error disconnecting from Google Fit:", error);
       return false;
@@ -272,10 +286,21 @@ async function saveTokensToSupabase(tokens: FitnessToken) {
     throw new Error("User not authenticated");
   }
   
-  // Store tokens in Supabase
-  return supabase
-    .from('fitness_connections')
-    .upsert({
+  // Use raw SQL approach to insert or update tokens
+  // This is a workaround until the Supabase types are updated
+  const { data, error } = await supabase.rpc('upsert_fitness_connection', {
+    p_user_id: user.user.id,
+    p_provider: 'google_fit',
+    p_access_token: tokens.access_token,
+    p_refresh_token: tokens.refresh_token,
+    p_expires_at: tokens.expires_at
+  });
+
+  if (error) {
+    console.log("Falling back to direct SQL due to RPC error:", error);
+    
+    // Try direct upsert as fallback
+    return await supabase.from('fitness_connections').upsert({
       user_id: user.user.id,
       provider: 'google_fit',
       access_token: tokens.access_token,
@@ -283,6 +308,9 @@ async function saveTokensToSupabase(tokens: FitnessToken) {
       expires_at: tokens.expires_at,
       updated_at: new Date().toISOString(),
     });
+  }
+  
+  return { data, error: null };
 }
 
 // Get tokens from Supabase
@@ -293,15 +321,31 @@ async function getTokensFromSupabase(): Promise<FitnessToken | null> {
     return null;
   }
   
-  const { data } = await supabase
-    .from('fitness_connections')
-    .select('access_token, refresh_token, expires_at')
-    .eq('user_id', user.user.id)
-    .eq('provider', 'google_fit')
-    .single();
+  // Use a stored procedure call as a workaround
+  const { data, error } = await supabase.rpc('get_fitness_connection', {
+    p_user_id: user.user.id,
+    p_provider: 'google_fit'
+  });
+  
+  if (error || !data) {
+    console.log("Falling back to direct SQL due to RPC error:", error);
     
-  if (!data) {
-    return null;
+    // Fallback to raw SQL query
+    const { data: connections } = await supabase.from('fitness_connections')
+      .select('access_token, refresh_token, expires_at')
+      .eq('user_id', user.user.id)
+      .eq('provider', 'google_fit')
+      .maybeSingle();
+      
+    if (!connections) {
+      return null;
+    }
+    
+    return {
+      access_token: connections.access_token,
+      refresh_token: connections.refresh_token,
+      expires_at: connections.expires_at,
+    };
   }
   
   return {
