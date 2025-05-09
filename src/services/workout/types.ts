@@ -23,12 +23,6 @@ export interface WorkoutPlan {
   days?: WorkoutDay[];
 }
 
-// Define proper types for RPC function responses
-export interface RpcResponse<T> {
-  data: T | null;
-  error: any;
-}
-
 // Helper function to get current user
 export async function getCurrentUser() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -41,18 +35,14 @@ export async function callRpc<T>(
   params?: Record<string, any>
 ): Promise<T[]> {
   try {
-    const query = params 
-      ? supabase.rpc(functionName, params)
-      : supabase.rpc(functionName);
-    
-    const { data, error } = await query;
+    const { data, error } = await supabase.rpc(functionName, params || {});
     
     if (error) {
       console.error(`Error calling RPC ${functionName}:`, error);
       return [];
     }
     
-    return data || [];
+    return data as T[] || [];
   } catch (error) {
     console.error(`Exception in RPC ${functionName}:`, error);
     return [];

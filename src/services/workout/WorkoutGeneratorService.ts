@@ -1,10 +1,5 @@
 import { toast } from "sonner";
-import { 
-  WorkoutPlan, 
-  WorkoutDay, 
-  WorkoutType, 
-  getCurrentUser
-} from './types';
+import { WorkoutPlan, WorkoutDay, WorkoutType, getCurrentUser } from './types';
 import { workoutTemplates } from './WorkoutTemplates';
 import { supabase } from "@/integrations/supabase/client";
 

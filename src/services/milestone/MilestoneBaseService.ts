@@ -1,7 +1,7 @@
 
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { callRpc, getCurrentUser, Milestone, UserMilestone, RpcFunction, RpcResponse } from './types';
+import { callRpc, getCurrentUser, Milestone, UserMilestone } from './types';
 
 export class MilestoneBaseService {
   // Get all available milestones
@@ -38,7 +38,7 @@ export class MilestoneBaseService {
       }
       
       // Call the stored procedure to update milestone progress
-      const result = await callRpc<null>('update_milestone_progress', {
+      await callRpc('update_milestone_progress', {
         p_user_id: user.id,
         p_type: type,
         p_value: value
@@ -77,17 +77,14 @@ export class MilestoneBaseService {
         .from('streaks')
         .select('current_streak, longest_streak')
         .eq('user_id', user.id)
-        .maybeSingle() as {
-          data: { current_streak: number, longest_streak: number } | null;
-          error: any;
-        };
+        .maybeSingle();
         
       if (error || !data) {
         console.error('Error fetching user streak:', error);
         return null;
       }
       
-      return data;
+      return data as { current_streak: number, longest_streak: number };
     } catch (error) {
       console.error('Error getting user streak:', error);
       return null;

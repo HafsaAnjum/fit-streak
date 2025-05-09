@@ -1,11 +1,6 @@
 
 import { toast } from "sonner";
-import { 
-  WorkoutDay, 
-  WorkoutPlan,
-  RpcResponse,
-  getCurrentUser
-} from './types';
+import { WorkoutDay, WorkoutPlan, getCurrentUser } from './types';
 import { supabase } from "@/integrations/supabase/client";
 
 export class WorkoutService {
@@ -29,7 +24,7 @@ export class WorkoutService {
         return null;
       }
       
-      if (!data || data.length === 0) {
+      if (!data || !Array.isArray(data) || data.length === 0) {
         return null;
       }
       
@@ -65,7 +60,7 @@ export class WorkoutService {
         return false;
       }
       
-      return data || false;
+      return Boolean(data);
     } catch (error) {
       console.error('Error completing workout day:', error);
       return false;
@@ -92,7 +87,7 @@ export class WorkoutService {
         return null;
       }
       
-      return data;
+      return data as WorkoutDay;
     } catch (error) {
       console.error('Error getting today\'s workout:', error);
       return null;
