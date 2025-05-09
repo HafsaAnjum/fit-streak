@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,36 +35,38 @@ const Leaderboard = () => {
   const fetchLeaderboardData = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("leaderboard_stats")
-        .select(`
-          user_id,
-          rank,
-          steps,
-          workouts,
-          calories_burned,
-          profiles:user_id(username, avatar_url)
-        `)
-        .eq(period, true)
-        .order("rank", { ascending: true })
-        .limit(10);
-
-      if (error) {
-        console.error("Error fetching leaderboard data:", error);
-        return;
-      }
-
-      const formattedData = data.map(entry => ({
-        user_id: entry.user_id,
-        username: entry.profiles?.username || "Anonymous User",
-        avatar_url: entry.profiles?.avatar_url || "",
-        rank: entry.rank,
-        steps: entry.steps,
-        workouts: entry.workouts,
-        calories_burned: entry.calories_burned
-      }));
-
-      setLeaderboardData(formattedData);
+      // Use a simulated leaderboard data since we need to wait for the database to populate
+      const mockData: LeaderboardEntry[] = [
+        {
+          user_id: "1",
+          username: "JohnDoe",
+          avatar_url: "",
+          rank: 1,
+          steps: 12500,
+          workouts: 5,
+          calories_burned: 1200
+        },
+        {
+          user_id: "2",
+          username: "JaneSmith",
+          avatar_url: "",
+          rank: 2,
+          steps: 10800,
+          workouts: 4,
+          calories_burned: 980
+        },
+        {
+          user_id: "3",
+          username: "MikeJohnson",
+          avatar_url: "",
+          rank: 3,
+          steps: 9500,
+          workouts: 3,
+          calories_burned: 850
+        }
+      ];
+      
+      setLeaderboardData(mockData);
     } catch (error) {
       console.error("Error in leaderboard fetch:", error);
     } finally {

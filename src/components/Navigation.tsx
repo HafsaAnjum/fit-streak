@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Calendar, BarChart2, Settings, Award, User, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Navigation = () => {
   const location = useLocation();
-  const { isMobile } = useMobile();
+  const isMobile = useIsMobile();
   
   if (location.pathname === "/auth" || location.pathname.startsWith("/auth/") || 
       location.pathname === "/onboarding" || location.pathname.startsWith("/onboarding/")) {

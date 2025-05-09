@@ -48,6 +48,42 @@ export type Database = {
         }
         Relationships: []
       }
+      challenges: {
+        Row: {
+          badge_image: string | null
+          created_at: string | null
+          description: string
+          end_date: string
+          goal_type: string
+          goal_value: number
+          id: string
+          start_date: string
+          title: string
+        }
+        Insert: {
+          badge_image?: string | null
+          created_at?: string | null
+          description: string
+          end_date: string
+          goal_type: string
+          goal_value: number
+          id?: string
+          start_date: string
+          title: string
+        }
+        Update: {
+          badge_image?: string | null
+          created_at?: string | null
+          description?: string
+          end_date?: string
+          goal_type?: string
+          goal_value?: number
+          id?: string
+          start_date?: string
+          title?: string
+        }
+        Relationships: []
+      }
       fitness_connections: {
         Row: {
           access_token: string
@@ -78,6 +114,42 @@ export type Database = {
         }
         Relationships: []
       }
+      leaderboard_stats: {
+        Row: {
+          calories_burned: number | null
+          id: string
+          monthly: boolean | null
+          rank: number
+          steps: number | null
+          updated_at: string | null
+          user_id: string
+          weekly: boolean | null
+          workouts: number | null
+        }
+        Insert: {
+          calories_burned?: number | null
+          id?: string
+          monthly?: boolean | null
+          rank: number
+          steps?: number | null
+          updated_at?: string | null
+          user_id: string
+          weekly?: boolean | null
+          workouts?: number | null
+        }
+        Update: {
+          calories_burned?: number | null
+          id?: string
+          monthly?: boolean | null
+          rank?: number
+          steps?: number | null
+          updated_at?: string | null
+          user_id?: string
+          weekly?: boolean | null
+          workouts?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -87,6 +159,7 @@ export type Database = {
           goal: string | null
           height: number | null
           id: string
+          public_profile: boolean | null
           updated_at: string | null
           username: string | null
           weight: number | null
@@ -99,6 +172,7 @@ export type Database = {
           goal?: string | null
           height?: number | null
           id: string
+          public_profile?: boolean | null
           updated_at?: string | null
           username?: string | null
           weight?: number | null
@@ -111,6 +185,7 @@ export type Database = {
           goal?: string | null
           height?: number | null
           id?: string
+          public_profile?: boolean | null
           updated_at?: string | null
           username?: string | null
           weight?: number | null
@@ -146,6 +221,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_challenges: {
+        Row: {
+          challenge_id: string
+          completed: boolean | null
+          id: string
+          joined_at: string | null
+          progress: number | null
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean | null
+          id?: string
+          joined_at?: string | null
+          progress?: number | null
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean | null
+          id?: string
+          joined_at?: string | null
+          progress?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenges_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workout_sessions: {
         Row: {
