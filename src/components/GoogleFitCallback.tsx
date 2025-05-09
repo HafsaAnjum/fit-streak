@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleFitService } from "@/services/GoogleFitService";
@@ -17,7 +18,11 @@ const GoogleFitCallback = () => {
         const code = urlParams.get("code");
         const error = urlParams.get("error");
         
-        console.log("Processing Google Fit callback with URL:", window.location.href);
+        console.log("Processing Google Fit callback");
+        console.log("URL:", window.location.href);
+        console.log("Origin:", window.location.origin);
+        console.log("Path:", window.location.pathname);
+        console.log("Search:", window.location.search);
         
         if (error) {
           throw new Error(`Authorization denied: ${error}`);
