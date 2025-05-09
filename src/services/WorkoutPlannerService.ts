@@ -24,6 +24,12 @@ export interface WorkoutPlan {
   days?: WorkoutDay[];
 }
 
+// Define proper types for RPC function responses
+interface RpcResponse<T> {
+  data: T | null;
+  error: any;
+}
+
 // Exercise templates for different workout types
 const workoutTemplates = {
   cardio: [
@@ -184,10 +190,7 @@ export const WorkoutPlannerService = {
         p_start_date: startDate.toISOString(),
         p_end_date: endDate.toISOString(),
         p_workout_days: workoutDays
-      }) as unknown as {
-        data: string | null;
-        error: any;
-      };
+      }) as unknown as RpcResponse<string>;
       
       if (error) {
         console.error('Error creating workout plan:', error);
@@ -218,10 +221,7 @@ export const WorkoutPlannerService = {
       // Get the plan with days using the RPC function
       const { data, error } = await supabase.rpc('get_current_workout_plan', {
         p_user_id: user.id
-      }) as unknown as {
-        data: any[] | null;
-        error: any;
-      };
+      }) as unknown as RpcResponse<any[]>;
       
       if (error) {
         console.error('Error fetching workout plan:', error);
@@ -255,10 +255,7 @@ export const WorkoutPlannerService = {
       const { data, error } = await supabase.rpc('complete_workout_day', {
         p_day_id: dayId,
         p_completed: completed
-      }) as unknown as {
-        data: boolean | null;
-        error: any;
-      };
+      }) as unknown as RpcResponse<boolean>;
         
       if (error) {
         console.error('Error completing workout day:', error);
@@ -285,10 +282,7 @@ export const WorkoutPlannerService = {
       // Get today's workout using RPC function
       const { data, error } = await supabase.rpc('get_todays_workout', {
         p_user_id: user.id
-      }) as unknown as {
-        data: WorkoutDay | null;
-        error: any;
-      };
+      }) as unknown as RpcResponse<WorkoutDay>;
       
       if (error || !data) {
         console.error('Error fetching today\'s workout:', error);
