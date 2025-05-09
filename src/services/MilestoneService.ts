@@ -31,12 +31,16 @@ interface RpcResponse<T> {
   error: any;
 }
 
+// Define valid RPC function name type
+type RpcFunction = string;
+
 export const MilestoneService = {
   // Get all available milestones
   getAllMilestones: async (): Promise<Milestone[]> => {
     try {
       // Use RPC function instead of direct table access
-      const { data, error } = await supabase.rpc('get_all_milestones' as string) as unknown as RpcResponse<Milestone[]>;
+      const { data, error } = await supabase
+        .rpc('get_all_milestones' as RpcFunction) as unknown as RpcResponse<Milestone[]>;
       
       if (error) {
         console.error('Error fetching milestones:', error);
@@ -60,9 +64,10 @@ export const MilestoneService = {
       }
       
       // Get user milestones with milestone details using RPC function
-      const { data, error } = await supabase.rpc('get_user_milestones' as string, {
-        p_user_id: user.id
-      }) as unknown as RpcResponse<UserMilestone[]>;
+      const { data, error } = await supabase
+        .rpc('get_user_milestones' as RpcFunction, {
+          p_user_id: user.id
+        }) as unknown as RpcResponse<UserMilestone[]>;
       
       if (error) {
         console.error('Error fetching user milestones:', error);
@@ -86,20 +91,22 @@ export const MilestoneService = {
       }
       
       // Call the stored procedure to update milestone progress
-      const { error } = await supabase.rpc('update_milestone_progress' as string, {
-        p_user_id: user.id,
-        p_type: type,
-        p_value: value
-      }) as unknown as RpcResponse<null>;
+      const { error } = await supabase
+        .rpc('update_milestone_progress' as RpcFunction, {
+          p_user_id: user.id,
+          p_type: type,
+          p_value: value
+        }) as unknown as RpcResponse<null>;
       
       if (error) {
         console.error('Error updating milestone progress:', error);
       }
       
       // Check for newly achieved milestones
-      const { data: newlyAchieved } = await supabase.rpc('get_newly_achieved_milestones' as string, {
-        p_user_id: user.id
-      }) as unknown as RpcResponse<Milestone[]>;
+      const { data: newlyAchieved } = await supabase
+        .rpc('get_newly_achieved_milestones' as RpcFunction, {
+          p_user_id: user.id
+        }) as unknown as RpcResponse<Milestone[]>;
       
       // Show achievement notifications
       if (newlyAchieved && newlyAchieved.length > 0) {
@@ -125,9 +132,10 @@ export const MilestoneService = {
       }
       
       // Count completed workouts using the RPC function
-      const { data, error } = await supabase.rpc('count_completed_workouts' as string, {
-        p_user_id: user.id
-      }) as unknown as RpcResponse<number>;
+      const { data, error } = await supabase
+        .rpc('count_completed_workouts' as RpcFunction, {
+          p_user_id: user.id
+        }) as unknown as RpcResponse<number>;
         
       if (error) {
         console.error('Error counting workouts:', error);
