@@ -50,10 +50,10 @@ export async function getCurrentUser() {
 export async function callRpc<T = any>(
   functionName: "get_all_milestones" | "get_user_milestones" | "update_milestone_progress" | 
                 "get_newly_achieved_milestones" | "count_completed_workouts" | "get_user_fitness_stats",
-  params: Record<string, any> = {}
+  params?: Record<string, any>
 ): Promise<T[]> {
   try {
-    const { data, error } = await supabase.rpc(functionName, params);
+    const { data, error } = await supabase.rpc(functionName, params || {});
     
     if (error) {
       console.error(`Error calling RPC ${functionName}:`, error);
