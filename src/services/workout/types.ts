@@ -59,7 +59,7 @@ export async function callRpc<T = any>(
       return [] as T[];
     }
     
-    return (data as T[]) || [];
+    return (data || []) as T[];
   } catch (error) {
     console.error(`Exception in RPC ${functionName}:`, error);
     return [] as T[];

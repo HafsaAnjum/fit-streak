@@ -60,7 +60,7 @@ interface WorkoutItemProps {
   };
 }
 
-const WorkoutItem = ({ workout }: WorkoutItemProps) => {
+const WorkoutItem = React.memo(({ workout }: WorkoutItemProps) => {
   return (
     <Card className="overflow-hidden border bg-card">
       <div className="p-4">
@@ -105,7 +105,9 @@ const WorkoutItem = ({ workout }: WorkoutItemProps) => {
       </div>
     </Card>
   );
-};
+});
+
+WorkoutItem.displayName = 'WorkoutItem';
 
 const WorkoutPlanner = () => {
   return (
@@ -161,4 +163,4 @@ const WorkoutPlanner = () => {
   );
 };
 
-export default WorkoutPlanner;
+export default React.memo(WorkoutPlanner);
