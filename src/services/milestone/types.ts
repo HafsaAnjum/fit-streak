@@ -30,7 +30,7 @@ export interface RpcResponse<T> {
   error: any;
 }
 
-// Define valid RPC function name type
+// Define RpcFunction type as string to match supabase.rpc functionality
 export type RpcFunction = string;
 
 // Helper function to get current user
@@ -41,13 +41,13 @@ export async function getCurrentUser() {
 
 // Helper function to call RPC safely with proper typing
 export async function callRpc<T>(
-  functionName: string, 
+  functionName: RpcFunction, 
   params?: Record<string, any>
 ): Promise<T[]> {
   try {
     const query = params 
-      ? supabase.rpc(functionName as RpcFunction, params)
-      : supabase.rpc(functionName as RpcFunction);
+      ? supabase.rpc(functionName, params)
+      : supabase.rpc(functionName);
     
     const { data, error } = await query as unknown as RpcResponse<T[]>;
     

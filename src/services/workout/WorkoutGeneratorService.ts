@@ -63,7 +63,7 @@ export class WorkoutGeneratorService {
       
       // Create workout plan using the RPC function
       const { data: planId, error } = await supabase
-        .rpc('create_workout_plan' as RpcFunction, {
+        .rpc('create_workout_plan', {
           p_user_id: user.id,
           p_start_date: startDate.toISOString(),
           p_end_date: endDate.toISOString(),
