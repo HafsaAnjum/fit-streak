@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { LogOut, Settings as SettingsIcon, Moon, Sun } from "lucide-react";
+import { LogOut, Settings as SettingsIcon, Moon, Sun, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -52,10 +52,13 @@ export default function Settings() {
             >
               <div className="space-y-6">
                 <div>
-                  <Link to="/settings">
-                    <Button className="w-full justify-start" variant="outline">
-                      <SettingsIcon className="mr-2 h-4 w-4" />
-                      All Settings
+                  <Link to="/settings" onClick={() => setOpen(false)}>
+                    <Button className="w-full justify-between" variant="outline">
+                      <div className="flex items-center">
+                        <SettingsIcon className="mr-2 h-4 w-4" />
+                        All Settings
+                      </div>
+                      <ChevronRight className="h-4 w-4" />
                     </Button>
                   </Link>
                 </div>

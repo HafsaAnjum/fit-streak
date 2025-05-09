@@ -1,13 +1,15 @@
 
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Calendar, BarChart2, Settings, Award, User, Activity } from "lucide-react";
+import { Home, Calendar, BarChart2, Settings, Award, User, Activity, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/context/AuthContext";
 
 const Navigation = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   
   if (location.pathname === "/auth" || location.pathname.startsWith("/auth/") || 
       location.pathname === "/onboarding" || location.pathname.startsWith("/onboarding/")) {
@@ -47,6 +49,18 @@ const Navigation = () => {
               <span className="text-[10px] mt-1">{item.label}</span>
             </Link>
           ))}
+          <Link
+            to="/settings"
+            className={cn(
+              "flex flex-col items-center justify-center h-full w-full transition-colors",
+              isActive("/settings")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-primary"
+            )}
+          >
+            <Settings className="h-5 w-5" />
+            <span className="text-[10px] mt-1">Settings</span>
+          </Link>
         </div>
       </nav>
     );
@@ -79,19 +93,30 @@ const Navigation = () => {
                 {item.label}
               </Link>
             ))}
+          </nav>
+          
+          <div className="flex items-center">
             <Link
               to="/settings"
               className={cn(
-                "px-4 py-2 text-sm font-medium transition-colors hover:text-primary",
+                "px-2 py-2 text-sm font-medium transition-colors hover:text-primary mr-2",
                 isActive("/settings")
                   ? "text-primary"
                   : "text-muted-foreground"
               )}
             >
-              <span className="sr-only">Settings</span>
               <Settings className="h-5 w-5" />
             </Link>
-          </nav>
+            
+            <Link
+              to="/profile"
+              className="ml-2 flex items-center"
+            >
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <UserCircle className="h-6 w-6 text-primary" />
+              </div>
+            </Link>
+          </div>
         </div>
       </div>
     </header>
