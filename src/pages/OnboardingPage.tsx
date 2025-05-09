@@ -6,18 +6,28 @@ import { useAuth } from "@/context/AuthContext";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import { FullPageLoader } from "@/components/LoadingSpinner";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const OnboardingPage = () => {
   const [isCompleting, setIsCompleting] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   
   const handleOnboardingComplete = async () => {
     setIsCompleting(true);
     
     try {
-      // Simulated delay to show loading state
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Refresh user profile data after onboarding
+      await refreshProfile();
+      
+      // Update the user's onboarding status
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ onboarding_completed: true })
+          .eq('id', user.id);
+      }
+      
       toast.success("Profile updated successfully!");
       navigate("/");
     } catch (error) {
