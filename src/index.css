@@ -78,6 +78,11 @@
     overflow-x: hidden;
   }
 
+  /* Smooth theme transitions */
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
   /* Hide scrollbar but keep functionality */
   ::-webkit-scrollbar {
     width: 0;
@@ -97,6 +102,11 @@
   * {
     scrollbar-width: none; /* "none" or "thin" */
     scrollbar-color: transparent transparent;
+  }
+  
+  /* Improved focus styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 }
 
@@ -153,6 +163,31 @@
       radial-gradient(at 80% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
       radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.1) 0px, transparent 50%);
   }
+  
+  /* Responsive utilities */
+  .responsive-container {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Mobile-first padding utilities */
+  .section-padding {
+    @apply py-8 md:py-12 lg:py-16;
+  }
+  
+  /* Force image to be responsive */
+  .img-responsive {
+    @apply max-w-full h-auto object-cover;
+  }
+  
+  /* Page transition utility */
+  .page-transition {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+  
+  /* Loading fade-in animation */
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out forwards;
+  }
 }
 
 @keyframes float {
@@ -182,5 +217,14 @@
   }
   50% {
     box-shadow: 0 0 20px 5px rgba(139, 92, 246, 0.5);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

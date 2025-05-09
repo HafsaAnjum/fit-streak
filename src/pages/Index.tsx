@@ -1,19 +1,20 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Activity, Award, Calendar, User, ChevronRight, Plus, BarChart, Dumbbell, Heart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import Settings from "@/components/Settings";
 import { Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Dashboard from "@/components/Dashboard";
 import { FullPageLoader } from "@/components/LoadingSpinner";
-import { useState, useEffect } from "react";
 import { useOnboardingRedirect } from "@/hooks/useOnboardingRedirect";
 import WebHealthConnect from "@/components/WebHealthConnect";
+import SEO from "@/components/SEO";
+import GlobalSettingsDialog from "@/components/GlobalSettingsDialog";
+import FeedbackDialog from "@/components/feedback/FeedbackDialog";
+import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 
 const MotionCard = motion(Card);
 
@@ -48,6 +49,11 @@ const Index = () => {
   
   return (
     <>
+      <SEO 
+        title="FitTrack - Your Personal Fitness Dashboard"
+        description="Track your workouts, monitor your progress, and reach your fitness goals with FitTrack."
+      />
+      
       <div className="container max-w-7xl mx-auto py-6 px-4 pb-24 md:pb-6 space-y-8">
         <motion.header 
           initial={{ opacity: 0, y: -20 }}
@@ -63,7 +69,7 @@ const Index = () => {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            {user && <Settings />}
+            {user && <GlobalSettingsDialog />}
           </div>
         </motion.header>
 
@@ -225,6 +231,10 @@ const Index = () => {
             </div>
           </Card>
         </motion.div>
+      </div>
+      
+      <div className="fixed bottom-8 right-8 z-10">
+        <FeedbackDialog />
       </div>
     </>
   );

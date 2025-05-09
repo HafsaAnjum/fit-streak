@@ -287,6 +287,39 @@ export type Database = {
           },
         ]
       }
+      user_feedback: {
+        Row: {
+          created_at: string | null
+          feedback_text: string
+          feedback_type: string
+          id: string
+          rating: number | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          feedback_text: string
+          feedback_type: string
+          id?: string
+          rating?: number | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          feedback_text?: string
+          feedback_type?: string
+          id?: string
+          rating?: number | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_milestones: {
         Row: {
           achieved: boolean
@@ -327,6 +360,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          notifications_enabled: boolean | null
+          public_profile: boolean | null
+          theme: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          public_profile?: boolean | null
+          theme?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          public_profile?: boolean | null
+          theme?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       workout_sessions: {
         Row: {
