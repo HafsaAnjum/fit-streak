@@ -40,13 +40,16 @@ type RPCParamTypes = {
   "get_user_fitness_stats": { user_id_param: string };
 }
 
+// Define valid function name type
+type RpcFunctionName = keyof RPCParamTypes;
+
 // Helper function to call RPC safely with proper typing
-export async function callRpc<T = any, F extends keyof RPCParamTypes = keyof RPCParamTypes>(
+export async function callRpc<T = any, F extends RpcFunctionName = RpcFunctionName>(
   functionName: F,
   params?: Partial<RPCParamTypes[F]>
 ): Promise<T[]> {
   try {
-    const { data, error } = await supabase.rpc(functionName as string, params || {});
+    const { data, error } = await supabase.rpc(functionName, params || {});
     
     if (error) {
       console.error(`Error calling RPC ${functionName}:`, error);
