@@ -65,7 +65,8 @@ export async function callRpc<T = any, F extends RpcFunctionName = RpcFunctionNa
   params?: Partial<RPCParamTypes[F]>
 ): Promise<T[]> {
   try {
-    const { data, error } = await supabase.rpc(functionName, params || {});
+    // Cast the params to any to avoid TypeScript errors with the Supabase RPC function
+    const { data, error } = await supabase.rpc(functionName, (params || {}) as any);
     
     if (error) {
       console.error(`Error calling RPC ${functionName}:`, error);
