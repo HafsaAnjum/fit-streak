@@ -90,7 +90,10 @@ export const MilestoneService = {
         p_user_id: user.id,
         p_type: type,
         p_value: value
-      });
+      }) as {
+        data: null;
+        error: any;
+      };
       
       if (error) {
         console.error('Error updating milestone progress:', error);

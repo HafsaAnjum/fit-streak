@@ -184,7 +184,10 @@ export const WorkoutPlannerService = {
         p_start_date: startDate.toISOString(),
         p_end_date: endDate.toISOString(),
         p_workout_days: workoutDays
-      });
+      }) as {
+        data: string | null;
+        error: any;
+      };
       
       if (error) {
         console.error('Error creating workout plan:', error);
@@ -215,7 +218,10 @@ export const WorkoutPlannerService = {
       // Get the plan with days using the RPC function
       const { data, error } = await supabase.rpc('get_current_workout_plan', {
         p_user_id: user.id
-      });
+      }) as {
+        data: any[] | null;
+        error: any;
+      };
       
       if (error) {
         console.error('Error fetching workout plan:', error);
@@ -227,15 +233,15 @@ export const WorkoutPlannerService = {
       }
       
       // Process the returned data
-      const plan = data[0];
+      const planData = data[0];
       
-      // Return the plan
+      // Return the plan with parsed data
       return {
-        id: plan.id,
-        user_id: plan.user_id,
-        start_date: plan.start_date,
-        end_date: plan.end_date,
-        days: plan.days || []
+        id: planData.id,
+        user_id: planData.user_id,
+        start_date: planData.start_date,
+        end_date: planData.end_date,
+        days: planData.days || []
       };
     } catch (error) {
       console.error('Error getting current workout plan:', error);
@@ -249,7 +255,10 @@ export const WorkoutPlannerService = {
       const { data, error } = await supabase.rpc('complete_workout_day', {
         p_day_id: dayId,
         p_completed: completed
-      });
+      }) as {
+        data: boolean | null;
+        error: any;
+      };
         
       if (error) {
         console.error('Error completing workout day:', error);
@@ -276,7 +285,10 @@ export const WorkoutPlannerService = {
       // Get today's workout using RPC function
       const { data, error } = await supabase.rpc('get_todays_workout', {
         p_user_id: user.id
-      });
+      }) as {
+        data: WorkoutDay | null;
+        error: any;
+      };
       
       if (error || !data) {
         console.error('Error fetching today\'s workout:', error);
