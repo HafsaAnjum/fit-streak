@@ -67,35 +67,6 @@ const FitnessSourceConnector: React.FC<FitnessSourceConnectorProps> = ({ onConne
           </div>
         </Card>
         
-        <Card className={`p-4 border ${connected === 'Fitbit' ? 'border-green-500' : 'border-border'}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                <Activity className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <h3 className="font-medium">Fitbit</h3>
-                <p className="text-xs text-muted-foreground">Sleep, workouts, daily activity & more</p>
-              </div>
-            </div>
-            
-            {connected === 'Fitbit' ? (
-              <div className="flex items-center text-green-500">
-                <CheckCircle2 className="h-5 w-5 mr-1" />
-                <span className="text-sm font-medium">Connected</span>
-              </div>
-            ) : (
-              <Button 
-                size="sm" 
-                onClick={() => handleConnect('Fitbit')}
-                disabled={!!connecting}
-              >
-                {connecting === 'Fitbit' ? 'Connecting...' : 'Connect'}
-              </Button>
-            )}
-          </div>
-        </Card>
-        
         <div className="flex flex-col space-y-3 mt-6">
           <div className="flex justify-between items-center">
             <Dialog>
