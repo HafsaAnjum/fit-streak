@@ -15,6 +15,7 @@ import ActivitiesPage from "./pages/ActivitiesPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import ChatButton from "@/components/ChatButton";
+import OnboardingPage from "./pages/OnboardingPage";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/onboarding" 
+                element={
+                  <ProtectedRoute>
+                    <OnboardingPage />
                   </ProtectedRoute>
                 } 
               />

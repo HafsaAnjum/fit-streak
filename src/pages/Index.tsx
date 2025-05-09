@@ -13,12 +13,15 @@ import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Dashboard from "@/components/Dashboard";
 import { FullPageLoader } from "@/components/LoadingSpinner";
 import { useState, useEffect } from "react";
+import { useOnboardingRedirect } from "@/hooks/useOnboardingRedirect";
+import WebHealthConnect from "@/components/WebHealthConnect";
 
 const MotionCard = motion(Card);
 
 const Index = () => {
   const { user, profile } = useAuth();
   const [loading, setLoading] = useState(true);
+  const { isChecking } = useOnboardingRedirect();
   
   useEffect(() => {
     // Simulate data loading
@@ -43,7 +46,7 @@ const Index = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  if (loading) return <FullPageLoader />;
+  if (loading || isChecking) return <FullPageLoader />;
   
   return (
     <>
@@ -83,6 +86,13 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="dashboard" className="mt-0 space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <WebHealthConnect />
+            </motion.div>
             <Dashboard />
           </TabsContent>
 
