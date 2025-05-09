@@ -1,42 +1,29 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { ArrowRight, ArrowLeft, CheckCircle2, Activity, Dumbbell, User, Heart } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import FitnessSourceConnector from "./FitnessSourceConnector";
+
+// Import step components
+import WelcomeStep from "./steps/WelcomeStep";
+import UserInfoStep from "./steps/UserInfoStep";
+import CompletionStep from "./steps/CompletionStep";
 import GoalSelection from "./GoalSelection";
 import WorkoutPreferences from "./WorkoutPreferences";
+import FitnessSourceConnector from "./FitnessSourceConnector";
 
-interface OnboardingProps {
-  onComplete: () => void;
-}
-
-const UserInfoSchema = z.object({
-  age: z.string().min(1, "Age is required"),
-  height: z.string().min(1, "Height is required"),
-  weight: z.string().min(1, "Weight is required"),
-  gender: z.string().min(1, "Gender is required"),
-  workoutTime: z.string().min(1, "Preferred workout time is required"),
-});
-
-type UserInfoValues = z.infer<typeof UserInfoSchema>;
+// Import types
+import { OnboardingProps, OnboardingFormData, UserInfoSchema, UserInfoValues } from "./types";
 
 const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<OnboardingFormData>({
     fullName: "",
     nickname: "",
     fitnessGoal: "",
@@ -49,7 +36,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     workoutTime: "",
     dataSourceConnected: false,
     dataSourceType: "",
-    goals: [] as string[],
+    goals: [],
     allowNotifications: false,
   });
   const { user, refreshProfile } = useAuth();
@@ -86,22 +73,27 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     
     if (step === 3) {
       // User Info validation using react-hook-form
-      const result = await userInfoForm.trigger();
-      if (!result) {
-        return; // Form validation will show errors
+      try {
+        const result = await userInfoForm.trigger();
+        if (!result) {
+          return; // Form validation will show errors
+        }
+        
+        const values = userInfoForm.getValues();
+        setFormData(prev => ({
+          ...prev,
+          age: values.age,
+          height: values.height,
+          weight: values.weight,
+          gender: values.gender,
+          workoutTime: values.workoutTime,
+        }));
+        
+        setStep(step + 1);
+      } catch (error) {
+        console.error("Error validating form:", error);
+        toast.error("Please complete all required fields");
       }
-      
-      const values = userInfoForm.getValues();
-      setFormData(prev => ({
-        ...prev,
-        age: values.age,
-        height: values.height,
-        weight: values.weight,
-        gender: values.gender,
-        workoutTime: values.workoutTime,
-      }));
-      
-      setStep(step + 1);
       return;
     }
     
@@ -256,6 +248,47 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     exit: { opacity: 0, x: -50 },
   };
 
+  // Render the appropriate step content
+  const renderStepContent = () => {
+    switch (step) {
+      case 1:
+        return <WelcomeStep formData={formData} setFormData={setFormData} />;
+        
+      case 2:
+        return (
+          <GoalSelection 
+            selectedGoal={formData.fitnessGoal}
+            onSelectGoal={handleGoalSelect}
+          />
+        );
+        
+      case 3:
+        return <UserInfoStep formData={formData} setFormData={setFormData} userInfoForm={userInfoForm} />;
+        
+      case 4:
+        return (
+          <FitnessSourceConnector
+            onConnect={handleSourceConnect}
+          />
+        );
+        
+      case 5:
+        return (
+          <WorkoutPreferences
+            selectedLevel={formData.fitnessLevel}
+            selectedType={formData.workoutType}
+            onPreferencesChange={handleWorkoutPreferences}
+          />
+        );
+        
+      case 6:
+        return <CompletionStep formData={formData} setFormData={setFormData} />;
+        
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <motion.div
@@ -289,236 +322,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
               transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
             >
               <CardContent className="p-6">
-                {step === 1 && (
-                  <div className="space-y-4 text-center">
-                    <div className="mx-auto bg-primary/10 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-                      <Activity className="h-8 w-8 text-primary" />
-                    </div>
-                    
-                    <h2 className="text-xl font-semibold">Start Your Fitness Journey</h2>
-                    
-                    <p className="text-muted-foreground">
-                      FitStreak helps you track workouts, set goals, and stay motivated with personalized insights.
-                    </p>
-                    
-                    <div className="py-4 grid grid-cols-2 gap-4">
-                      <div className="flex flex-col items-center p-3 bg-secondary/30 rounded-lg">
-                        <Heart className="h-6 w-6 text-primary mb-2" />
-                        <span className="text-sm font-medium">Health Tracking</span>
-                      </div>
-                      <div className="flex flex-col items-center p-3 bg-secondary/30 rounded-lg">
-                        <Dumbbell className="h-6 w-6 text-primary mb-2" />
-                        <span className="text-sm font-medium">Workout Plans</span>
-                      </div>
-                      <div className="flex flex-col items-center p-3 bg-secondary/30 rounded-lg">
-                        <CheckCircle2 className="h-6 w-6 text-primary mb-2" />
-                        <span className="text-sm font-medium">Goal Setting</span>
-                      </div>
-                      <div className="flex flex-col items-center p-3 bg-secondary/30 rounded-lg">
-                        <User className="h-6 w-6 text-primary mb-2" />
-                        <span className="text-sm font-medium">Personal Stats</span>
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground">
-                      Let's create your personalized fitness profile in a few simple steps.
-                    </p>
-                  </div>
-                )}
-
-                {step === 2 && (
-                  <GoalSelection 
-                    selectedGoal={formData.fitnessGoal}
-                    onSelectGoal={handleGoalSelect}
-                  />
-                )}
-
-                {step === 3 && (
-                  <div className="space-y-4">
-                    <h2 className="text-lg font-semibold">Tell Us About Yourself</h2>
-                    
-                    <Form {...userInfoForm}>
-                      <form className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={userInfoForm.control}
-                            name="age"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Age</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    placeholder="Years" 
-                                    {...field} 
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={userInfoForm.control}
-                            name="gender"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Gender</FormLabel>
-                                <Select 
-                                  onValueChange={field.onChange} 
-                                  defaultValue={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="male">Male</SelectItem>
-                                    <SelectItem value="female">Female</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
-                                    <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={userInfoForm.control}
-                            name="height"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Height (cm)</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    placeholder="cm" 
-                                    {...field} 
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={userInfoForm.control}
-                            name="weight"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Weight (kg)</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    placeholder="kg" 
-                                    {...field} 
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <FormField
-                          control={userInfoForm.control}
-                          name="workoutTime"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Preferred Workout Time</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select time" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="early_morning">Early Morning (5am-8am)</SelectItem>
-                                  <SelectItem value="morning">Morning (8am-11am)</SelectItem>
-                                  <SelectItem value="afternoon">Afternoon (11am-4pm)</SelectItem>
-                                  <SelectItem value="evening">Evening (4pm-8pm)</SelectItem>
-                                  <SelectItem value="night">Night (8pm-12am)</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormItem>
-                          )}
-                        />
-                      </form>
-                    </Form>
-                  </div>
-                )}
-                
-                {step === 4 && (
-                  <FitnessSourceConnector
-                    onConnect={handleSourceConnect}
-                  />
-                )}
-                
-                {step === 5 && (
-                  <WorkoutPreferences
-                    selectedLevel={formData.fitnessLevel}
-                    selectedType={formData.workoutType}
-                    onPreferencesChange={handleWorkoutPreferences}
-                  />
-                )}
-
-                {step === 6 && (
-                  <div className="space-y-4 text-center">
-                    <div className="mx-auto bg-green-500/10 p-4 rounded-full w-20 h-20 flex items-center justify-center mb-4">
-                      <CheckCircle2 className="h-10 w-10 text-green-500" />
-                    </div>
-                    
-                    <h2 className="text-xl font-semibold">You're All Set!</h2>
-                    
-                    <div className="bg-muted/30 p-4 rounded-lg">
-                      <h3 className="font-medium">Your Fitness Profile</h3>
-                      <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-                        {formData.fitnessGoal && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Goal:</span>
-                            <span className="font-medium">{formData.fitnessGoal}</span>
-                          </div>
-                        )}
-                        {formData.fitnessLevel && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Level:</span>
-                            <span className="font-medium">{formData.fitnessLevel}</span>
-                          </div>
-                        )}
-                        {formData.workoutType && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Workout:</span>
-                            <span className="font-medium">{formData.workoutType}</span>
-                          </div>
-                        )}
-                        {formData.dataSourceType && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground">Connected:</span>
-                            <span className="font-medium">{formData.dataSourceType}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <p className="text-muted-foreground text-sm">
-                      Your personalized dashboard is ready. You can update your preferences anytime from your profile settings.
-                    </p>
-                    
-                    <div className="flex items-center space-x-2 text-sm justify-center mt-2">
-                      <Checkbox 
-                        id="notifications" 
-                        checked={formData.allowNotifications}
-                        onCheckedChange={(checked) => 
-                          setFormData({ ...formData, allowNotifications: !!checked })
-                        }
-                      />
-                      <Label htmlFor="notifications">Send me workout reminders and tips</Label>
-                    </div>
-                  </div>
-                )}
+                {renderStepContent()}
               </CardContent>
             </motion.div>
           </AnimatePresence>
