@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -121,6 +120,7 @@ export const GoogleFitService = {
       
       // Log what we're doing to help with debugging
       console.log("Initiating Google Fit auth, redirecting to:", authUrl.toString());
+      console.log("Redirect URI set to:", REDIRECT_URI);
       
       window.location.href = authUrl.toString();
     } catch (error) {

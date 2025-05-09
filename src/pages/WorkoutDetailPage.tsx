@@ -9,7 +9,7 @@ import { ArrowLeft, Clock, Calendar, Dumbbell, Flame, Activity, ChevronRight, Pl
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 
-// Sample workout details
+// Sample workout details with string keys to match URL params
 const workoutDetails = {
   "1": {
     id: 1,
@@ -69,6 +69,19 @@ const WorkoutDetailPage = () => {
     navigate(`/workout-session`, { state: { workout } });
   };
   
+  // Create variants for animations
+  const authContainerAnimation = {
+    hidden: { opacity: 0, y: 20 },
+    show: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  };
+  
   if (loading) {
     return (
       <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-[50vh]">
@@ -90,8 +103,9 @@ const WorkoutDetailPage = () => {
   
   return (
     <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial="hidden"
+      animate="show"
+      variants={authContainerAnimation}
       className="container mx-auto p-4 pb-24 md:pb-6 space-y-6"
     >
       <Button 

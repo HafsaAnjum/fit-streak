@@ -12,6 +12,7 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
 import GoogleFitCallback from "@/components/GoogleFitCallback";
+import FitbitCallback from "@/components/FitbitCallback";
 import FitnessDashboard from "@/components/dashboard/FitnessDashboard";
 import WorkoutSessionPage from "@/pages/WorkoutSessionPage";
 import WorkoutPage from "@/pages/WorkoutPage";
@@ -44,6 +45,7 @@ function App() {
               
               {/* Auth callback routes */}
               <Route path="/auth/google-fit/callback" element={<GoogleFitCallback />} />
+              <Route path="/auth/fitbit/callback" element={<FitbitCallback />} />
               
               {/* Protected routes */}
               <Route path="/" element={<Navigate to="/home" replace />} />
