@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -11,26 +11,31 @@ import { supabase } from "@/integrations/supabase/client";
 const OnboardingPage = () => {
   const [isCompleting, setIsCompleting] = useState(false);
   const navigate = useNavigate();
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, setIsNewUser } = useAuth();
+  
+  useEffect(() => {
+    // Redirect if user is not logged in
+    if (!user) {
+      navigate("/auth");
+    }
+  }, [user, navigate]);
   
   const handleOnboardingComplete = async () => {
     setIsCompleting(true);
     
     try {
-      // Refresh user profile data after onboarding
-      await refreshProfile();
-      
       // Update the user's onboarding status
       if (user) {
-        // Since onboarding_completed doesn't exist in the profiles table type,
-        // we'll use fitness_level as an indicator that onboarding is complete
         await supabase
           .from('profiles')
           .update({ 
-            fitness_level: 'completed_onboarding' 
-            // We use fitness_level which exists in the type definition
+            fitness_level: 'completed_onboarding'
           })
           .eq('id', user.id);
+        
+        // Refresh user profile data after onboarding
+        await refreshProfile();
+        setIsNewUser(false);
       }
       
       toast.success("Profile updated successfully!");
@@ -48,8 +53,6 @@ const OnboardingPage = () => {
   }
   
   if (!user) {
-    // If not logged in, redirect to auth page
-    navigate("/auth");
     return <FullPageLoader />;
   }
   

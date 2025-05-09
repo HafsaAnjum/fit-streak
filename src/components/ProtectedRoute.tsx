@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { Navigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
@@ -8,6 +8,11 @@ import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, isNewUser, setIsNewUser } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(isNewUser);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    setShowOnboarding(isNewUser);
+  }, [isNewUser]);
   
   if (loading) {
     return (
@@ -24,12 +29,15 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     setIsNewUser(false);
+    navigate("/");
   };
   
   return (
     <>
-      {children}
-      {showOnboarding && <OnboardingWizard onComplete={handleOnboardingComplete} />}
+      {showOnboarding ? 
+        <OnboardingWizard onComplete={handleOnboardingComplete} /> : 
+        children
+      }
     </>
   );
 }

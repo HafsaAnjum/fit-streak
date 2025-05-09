@@ -150,6 +150,11 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     if (connected) {
       toast.success(`Successfully connected to ${source}!`);
     }
+    
+    // If skipped, continue to next step
+    if (!connected) {
+      setStep(5); // Move to workout preferences
+    }
   };
 
   const handleGoalSelect = (goal: string) => {

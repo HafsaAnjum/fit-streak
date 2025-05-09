@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { toast } from "sonner";
 
 export default function AuthPage() {
   const { signIn, signUp, user } = useAuth();
@@ -44,9 +45,11 @@ export default function AuthPage() {
     setLoading(true);
     try {
       await signIn(email, password);
+      toast.success("Signed in successfully!");
       navigate("/");
     } catch (error) {
       console.error("Sign in error:", error);
+      toast.error("Failed to sign in. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -59,8 +62,10 @@ export default function AuthPage() {
       await signUp(email, password);
       // We won't navigate since the user may need to verify their email
       setShowVerificationAlert(true);
+      toast.success("Account created! Please check your email.");
     } catch (error) {
       console.error("Sign up error:", error);
+      toast.error("Failed to create account. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -70,9 +75,11 @@ export default function AuthPage() {
     setLoading(true);
     try {
       await signIn("demo@fitstreak.app", "Password123");
+      toast.success("Logged in with demo account!");
       navigate("/");
     } catch (error) {
       console.error("Demo login error:", error);
+      toast.error("Failed to login with demo account.");
     } finally {
       setLoading(false);
     }

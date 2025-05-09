@@ -14,6 +14,7 @@ import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
 import GoogleFitCallback from "@/components/GoogleFitCallback";
 import FitnessDashboard from "@/components/dashboard/FitnessDashboard";
+import { Toaster } from "sonner";
 import "./App.css";
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
+          <Toaster position="top-center" />
         </div>
       </Router>
     </AuthProvider>

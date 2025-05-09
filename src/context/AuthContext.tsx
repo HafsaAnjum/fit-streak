@@ -91,41 +91,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
   
   const checkIfNewUser = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('created_at')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('created_at, fitness_level')
+        .eq('id', userId)
+        .single();
+        
+      if (error) {
+        console.error('Error checking if user is new:', error);
+        return false;
+      }
       
-    if (error) {
-      console.error('Error checking if user is new:', error);
+      // Consider user new if profile lacks fitness_level
+      if (data) {
+        return !data.fitness_level;
+      }
+      
+      return true;
+    } catch (e) {
+      console.error('Error in checkIfNewUser:', e);
       return false;
     }
-    
-    // If profile was created less than 30 seconds ago, consider it a new user
-    if (data) {
-      const createdAt = new Date(data.created_at);
-      const now = new Date();
-      const diffSeconds = (now.getTime() - createdAt.getTime()) / 1000;
-      return diffSeconds < 30;
-    }
-    
-    return false;
   };
   
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
       
-    if (error) {
-      console.error('Error fetching profile:', error);
-      return;
+      setProfile(data);
+    } catch (e) {
+      console.error('Error in fetchProfile:', e);
     }
-    
-    setProfile(data);
   };
   
   const refreshProfile = async () => {
@@ -141,8 +147,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.error(error.message);
         throw error;
       }
-      
-      toast.success('Signed in successfully!');
     } catch (error) {
       console.error('Sign in error:', error);
       throw error;
@@ -182,8 +186,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.error(error.message);
         throw error;
       }
-      
-      toast.success('Signed out successfully');
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;

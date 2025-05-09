@@ -5,15 +5,17 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useOnboardingRedirect = () => {
-  const { user } = useAuth();
+  const { user, setIsNewUser } = useAuth();
   const navigate = useNavigate();
-  const [isChecking, setIsChecking] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     const checkUserOnboarding = async () => {
-      if (!user) return;
+      if (!user) {
+        setIsChecking(false);
+        return;
+      }
       
-      setIsChecking(true);
       try {
         // Check if the user has completed onboarding
         const { data, error } = await supabase
@@ -24,6 +26,7 @@ export const useOnboardingRedirect = () => {
           
         if (error) {
           console.error('Error checking onboarding status:', error);
+          setIsChecking(false);
           return;
         }
         
@@ -31,6 +34,7 @@ export const useOnboardingRedirect = () => {
         const needsOnboarding = !data.username || !data.fitness_level;
         
         if (needsOnboarding) {
+          setIsNewUser(true);
           navigate('/onboarding');
         }
       } catch (error) {
@@ -42,8 +46,10 @@ export const useOnboardingRedirect = () => {
     
     if (user) {
       checkUserOnboarding();
+    } else {
+      setIsChecking(false);
     }
-  }, [user, navigate]);
+  }, [user, navigate, setIsNewUser]);
 
   return { isChecking };
 };
