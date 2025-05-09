@@ -1,6 +1,7 @@
 
 import { toast } from 'sonner';
-import { callRpc, getCurrentUser, Milestone, UserMilestone } from './types';
+import { supabase } from '@/integrations/supabase/client';
+import { callRpc, getCurrentUser, Milestone, UserMilestone, RpcFunction, RpcResponse } from './types';
 
 export class MilestoneBaseService {
   // Get all available milestones
@@ -37,16 +38,11 @@ export class MilestoneBaseService {
       }
       
       // Call the stored procedure to update milestone progress
-      const { error } = await callRpc<null>('update_milestone_progress', {
+      const result = await callRpc<null>('update_milestone_progress', {
         p_user_id: user.id,
         p_type: type,
         p_value: value
       });
-      
-      if (error) {
-        console.error('Error updating milestone progress:', error);
-        return;
-      }
       
       // Check for newly achieved milestones
       const newlyAchieved = await callRpc<Milestone>('get_newly_achieved_milestones', {
