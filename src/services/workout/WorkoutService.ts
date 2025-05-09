@@ -4,7 +4,6 @@ import {
   WorkoutDay, 
   WorkoutPlan,
   RpcResponse,
-  RpcFunction,
   getCurrentUser
 } from './types';
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +22,7 @@ export class WorkoutService {
       const { data, error } = await supabase
         .rpc('get_current_workout_plan', {
           p_user_id: user.id
-        }) as unknown as RpcResponse<any[]>;
+        });
       
       if (error) {
         console.error('Error fetching workout plan:', error);
@@ -58,7 +57,7 @@ export class WorkoutService {
         .rpc('complete_workout_day', {
           p_day_id: dayId,
           p_completed: completed
-        }) as unknown as RpcResponse<boolean>;
+        });
         
       if (error) {
         console.error('Error completing workout day:', error);
@@ -86,7 +85,7 @@ export class WorkoutService {
       const { data, error } = await supabase
         .rpc('get_todays_workout', {
           p_user_id: user.id
-        }) as unknown as RpcResponse<WorkoutDay>;
+        });
       
       if (error || !data) {
         console.error('Error fetching today\'s workout:', error);

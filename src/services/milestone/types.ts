@@ -30,9 +30,6 @@ export interface RpcResponse<T> {
   error: any;
 }
 
-// Define RpcFunction type as string to match supabase.rpc functionality
-export type RpcFunction = string;
-
 // Helper function to get current user
 export async function getCurrentUser() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -41,7 +38,7 @@ export async function getCurrentUser() {
 
 // Helper function to call RPC safely with proper typing
 export async function callRpc<T>(
-  functionName: RpcFunction, 
+  functionName: string, 
   params?: Record<string, any>
 ): Promise<T[]> {
   try {
@@ -49,7 +46,7 @@ export async function callRpc<T>(
       ? supabase.rpc(functionName, params)
       : supabase.rpc(functionName);
     
-    const { data, error } = await query as unknown as RpcResponse<T[]>;
+    const { data, error } = await query;
     
     if (error) {
       console.error(`Error calling RPC ${functionName}:`, error);

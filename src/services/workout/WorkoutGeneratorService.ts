@@ -1,11 +1,8 @@
-
 import { toast } from "sonner";
 import { 
   WorkoutPlan, 
   WorkoutDay, 
   WorkoutType, 
-  RpcResponse,
-  RpcFunction,
   getCurrentUser
 } from './types';
 import { workoutTemplates } from './WorkoutTemplates';
@@ -68,7 +65,7 @@ export class WorkoutGeneratorService {
           p_start_date: startDate.toISOString(),
           p_end_date: endDate.toISOString(),
           p_workout_days: workoutDays
-        }) as unknown as RpcResponse<string>;
+        });
       
       if (error) {
         console.error('Error creating workout plan:', error);
