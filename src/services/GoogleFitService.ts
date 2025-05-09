@@ -1,7 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Google Fit API endpoints
-const BASE_URL = "https://www.googleapis.com/fitness/v1/users/me";
+const BASE_URL = "https://fitness.googleapis.com/fitness/v1/users/me";
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
 // Google Fit OAuth configuration
@@ -130,12 +131,14 @@ export const GoogleFitService = {
         body: new URLSearchParams({
           code,
           client_id: CLIENT_ID,
+          client_secret: CLIENT_SECRET,
           redirect_uri: REDIRECT_URI,
           grant_type: "authorization_code",
         }),
       });
 
       if (!tokenResponse.ok) {
+        console.error("Token response not OK:", await tokenResponse.text());
         throw new Error("Failed to exchange code for tokens");
       }
 
@@ -300,25 +303,32 @@ async function fetchDatasetFromGoogleFit(
   startTimeMillis: number,
   endTimeMillis: number
 ) {
-  const response = await fetch(`${BASE_URL}/dataset:aggregate`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      aggregateBy: [{ dataTypeName: dataType }],
-      bucketByTime: { durationMillis: 86400000 }, // Daily buckets
-      startTimeMillis,
-      endTimeMillis,
-    }),
-  });
+  try {
+    const response = await fetch(`${BASE_URL}/dataset:aggregate`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        aggregateBy: [{ dataTypeName: dataType }],
+        bucketByTime: { durationMillis: 86400000 }, // Daily buckets
+        startTimeMillis,
+        endTimeMillis,
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Google Fit API error: ${response.statusText}`);
+    if (!response.ok) {
+      console.error(`Google Fit API error: ${response.status} - ${response.statusText}`);
+      console.error("Error response:", await response.text());
+      throw new Error(`Google Fit API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching data from Google Fit:", error);
+    throw error;
   }
-
-  return response.json();
 }
 
 // Helper function to process and format data points
@@ -368,12 +378,14 @@ async function refreshAccessToken(refreshToken: string, userId: string): Promise
       },
       body: new URLSearchParams({
         client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
         refresh_token: refreshToken,
         grant_type: "refresh_token",
       }),
     });
 
     if (!response.ok) {
+      console.error("Failed to refresh token:", await response.text());
       throw new Error("Failed to refresh token");
     }
 

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 const GoogleFitCallback = () => {
   const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
+  const [errorDetail, setErrorDetail] = useState<string>("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,9 +16,14 @@ const GoogleFitCallback = () => {
         // Get the authorization code from URL
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get("code");
+        const error = urlParams.get("error");
+        
+        if (error) {
+          throw new Error(`Authorization denied: ${error}`);
+        }
         
         if (!code) {
-          throw new Error("No authorization code found");
+          throw new Error("No authorization code found in URL");
         }
         
         // Process the authorization code
@@ -38,11 +44,13 @@ const GoogleFitCallback = () => {
         }
       } catch (error) {
         console.error("Error processing Google Fit callback:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        setErrorDetail(errorMessage);
         setStatus("error");
         toast.error("Failed to connect to Google Fit");
         
         // Redirect back to dashboard after error
-        setTimeout(() => navigate("/"), 2000);
+        setTimeout(() => navigate("/"), 3000);
       }
     };
     
@@ -80,7 +88,9 @@ const GoogleFitCallback = () => {
               </svg>
             </div>
             <h2 className="text-2xl font-bold mt-4">Connection Failed</h2>
-            <p className="text-muted-foreground mt-2">Unable to connect to Google Fit. Redirecting you back...</p>
+            <p className="text-muted-foreground mt-2">Unable to connect to Google Fit.</p>
+            {errorDetail && <p className="text-sm text-red-500 mt-2">{errorDetail}</p>}
+            <p className="text-muted-foreground mt-2">Redirecting you back...</p>
           </>
         )}
       </div>
