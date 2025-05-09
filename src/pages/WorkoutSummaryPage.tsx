@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ArrowLeft, Award, Share2, Star, Calendar, Clock, Flame, Activity } from "lucide-react";
+import { ArrowLeft, Award, Share2, Star, Calendar, Clock, Flame, Activity, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
