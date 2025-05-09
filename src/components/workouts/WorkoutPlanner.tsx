@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dumbbell, Brain, ChevronRight, Clock, Calendar, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const mockWorkouts = [
   {
@@ -45,6 +46,66 @@ const mockWorkouts = [
     aiRecommended: false,
   },
 ];
+
+interface WorkoutItemProps {
+  workout: {
+    id: number;
+    name: string;
+    duration: string;
+    difficulty: string;
+    equipment: string;
+    focus: string;
+    aiRecommended: boolean;
+    scheduled?: string;
+  };
+}
+
+const WorkoutItem = ({ workout }: WorkoutItemProps) => {
+  return (
+    <Card className="overflow-hidden border bg-card">
+      <div className="p-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h4 className="font-medium truncate flex items-center">
+              {workout.name}
+              {workout.aiRecommended && (
+                <Badge variant="secondary" className="ml-2 text-[10px] py-0 h-5">
+                  <Sparkles className="h-3 w-3 mr-1" /> AI Pick
+                </Badge>
+              )}
+            </h4>
+            <div className="flex items-center mt-1 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3 mr-1" />
+              <span>{workout.duration}</span>
+              <span className="mx-2">•</span>
+              <span>{workout.difficulty}</span>
+            </div>
+          </div>
+          <Link to="/workout-session">
+            <Button size="icon" variant="ghost" className="h-7 w-7">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+        
+        <div className="mt-2 flex flex-wrap gap-1">
+          {workout.focus.split(", ").map((focus, idx) => (
+            <Badge key={idx} variant="outline" className="text-[10px] bg-secondary/50">
+              {focus}
+            </Badge>
+          ))}
+        </div>
+        
+        {workout.scheduled && (
+          <div className="mt-3 pt-3 border-t text-xs flex justify-between items-center">
+            <span className="text-muted-foreground">Scheduled:</span>
+            <span className="font-medium">{workout.scheduled}</span>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};
 
 const WorkoutPlanner = () => {
   return (
@@ -89,69 +150,13 @@ const WorkoutPlanner = () => {
               For personalized AI workout recommendations
             </p>
           </div>
-          <Button variant="ghost" size="sm" className="shrink-0">
-            Connect
-          </Button>
+          <Link to="/fitness">
+            <Button variant="ghost" size="sm" className="shrink-0">
+              Connect
+            </Button>
+          </Link>
         </div>
       </CardContent>
-    </Card>
-  );
-};
-
-interface WorkoutItemProps {
-  workout: {
-    id: number;
-    name: string;
-    duration: string;
-    difficulty: string;
-    equipment: string;
-    focus: string;
-    aiRecommended: boolean;
-    scheduled?: string;
-  };
-}
-
-const WorkoutItem = ({ workout }: WorkoutItemProps) => {
-  return (
-    <Card className="overflow-hidden border bg-card">
-      <div className="p-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <h4 className="font-medium truncate flex items-center">
-              {workout.name}
-              {workout.aiRecommended && (
-                <Badge variant="secondary" className="ml-2 text-[10px] py-0 h-5">
-                  <Sparkles className="h-3 w-3 mr-1" /> AI Pick
-                </Badge>
-              )}
-            </h4>
-            <div className="flex items-center mt-1 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3 mr-1" />
-              <span>{workout.duration}</span>
-              <span className="mx-2">•</span>
-              <span>{workout.difficulty}</span>
-            </div>
-          </div>
-          <Button size="icon" variant="ghost" className="h-7 w-7">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-        
-        <div className="mt-2 flex flex-wrap gap-1">
-          {workout.focus.split(", ").map((focus, idx) => (
-            <Badge key={idx} variant="outline" className="text-[10px] bg-secondary/50">
-              {focus}
-            </Badge>
-          ))}
-        </div>
-        
-        {workout.scheduled && (
-          <div className="mt-3 pt-3 border-t text-xs flex justify-between items-center">
-            <span className="text-muted-foreground">Scheduled:</span>
-            <span className="font-medium">{workout.scheduled}</span>
-          </div>
-        )}
-      </div>
     </Card>
   );
 };
