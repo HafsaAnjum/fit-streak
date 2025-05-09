@@ -26,11 +26,8 @@ export const MilestoneService = {
   getAllMilestones: async (): Promise<Milestone[]> => {
     try {
       // Use raw SQL query instead of the typed client
-      const { data, error } = await supabase
-        .from('milestones')
-        .select('*')
-        .order('target_value', { ascending: true }) as { data: Milestone[], error: any };
-        
+      const { data, error } = await supabase.rpc('get_all_milestones') as { data: Milestone[], error: any };
+      
       if (error) {
         console.error('Error fetching milestones:', error);
         return [];
@@ -52,49 +49,17 @@ export const MilestoneService = {
         return [];
       }
       
-      // Get all milestones
-      const { data: milestones } = await supabase
-        .from('milestones')
-        .select('*')
-        .order('target_value', { ascending: true }) as { data: Milestone[], error: any };
-        
-      if (!milestones) {
-        return [];
-      }
+      // Get user milestones with milestone details
+      const { data, error } = await supabase.rpc('get_user_milestones', {
+        p_user_id: user.id
+      }) as { data: UserMilestone[], error: any };
       
-      // Get user's milestone progress
-      const { data: userMilestones, error } = await supabase
-        .from('user_milestones')
-        .select('*')
-        .eq('user_id', user.id) as { data: UserMilestone[], error: any };
-        
       if (error) {
         console.error('Error fetching user milestones:', error);
         return [];
       }
       
-      // Map user progress to milestones or create new entries
-      const result: UserMilestone[] = milestones.map(milestone => {
-        const userMilestone = userMilestones?.find(um => um.milestone_id === milestone.id);
-        
-        if (userMilestone) {
-          return {
-            ...userMilestone,
-            milestone
-          };
-        } else {
-          // Create new milestone progress entry
-          return {
-            user_id: user.id,
-            milestone_id: milestone.id,
-            achieved: false,
-            progress: 0,
-            milestone
-          };
-        }
-      });
-      
-      return result;
+      return data || [];
     } catch (error) {
       console.error('Error in getUserMilestones:', error);
       return [];
@@ -110,74 +75,29 @@ export const MilestoneService = {
         return;
       }
       
-      // Get milestones of this type
-      const { data: milestones } = await supabase
-        .from('milestones')
-        .select('*')
-        .eq('type', type) as { data: Milestone[], error: any };
-        
-      if (!milestones || milestones.length === 0) {
-        return;
+      // Call the stored procedure to update milestone progress
+      const { error } = await supabase.rpc('update_milestone_progress', {
+        p_user_id: user.id,
+        p_type: type,
+        p_value: value
+      });
+      
+      if (error) {
+        console.error('Error updating milestone progress:', error);
       }
       
-      // Get current user progress for these milestones
-      const { data: userMilestones } = await supabase
-        .from('user_milestones')
-        .select('*')
-        .eq('user_id', user.id)
-        .in('milestone_id', milestones.map(m => m.id)) as { data: UserMilestone[], error: any };
-        
-      // Process each milestone
-      for (const milestone of milestones) {
-        const userMilestone = userMilestones?.find(um => um.milestone_id === milestone.id);
-        
-        if (userMilestone) {
-          // If already achieved, skip
-          if (userMilestone.achieved) {
-            continue;
-          }
-          
-          // Update progress
-          const newProgress = Math.min(value, milestone.target_value);
-          const achieved = newProgress >= milestone.target_value;
-          
-          await supabase
-            .from('user_milestones')
-            .update({
-              progress: newProgress,
-              achieved: achieved,
-              achieved_at: achieved ? new Date().toISOString() : null,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', userMilestone.id);
-            
-          // Show achievement notification
-          if (achieved && !userMilestone.achieved) {
-            toast.success(`Achievement Unlocked: ${milestone.title}`, {
-              description: milestone.description,
-              duration: 5000,
-            });
-          }
-        } else {
-          // Create new user milestone
-          const achieved = value >= milestone.target_value;
-          await supabase
-            .from('user_milestones')
-            .insert({
-              user_id: user.id,
-              milestone_id: milestone.id,
-              progress: Math.min(value, milestone.target_value),
-              achieved: achieved,
-              achieved_at: achieved ? new Date().toISOString() : null
-            });
-            
-          // Show achievement notification if achieved immediately
-          if (achieved) {
-            toast.success(`Achievement Unlocked: ${milestone.title}`, {
-              description: milestone.description,
-              duration: 5000,
-            });
-          }
+      // Check for newly achieved milestones
+      const { data: newlyAchieved } = await supabase.rpc('get_newly_achieved_milestones', {
+        p_user_id: user.id
+      }) as { data: Milestone[], error: any };
+      
+      // Show achievement notifications
+      if (newlyAchieved && newlyAchieved.length > 0) {
+        for (const milestone of newlyAchieved) {
+          toast.success(`Achievement Unlocked: ${milestone.title}`, {
+            description: milestone.description,
+            duration: 5000,
+          });
         }
       }
     } catch (error) {
