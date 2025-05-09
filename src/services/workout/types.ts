@@ -4,23 +4,40 @@ import { supabase } from "@/integrations/supabase/client";
 export type WorkoutType = 'cardio' | 'strength' | 'flexibility' | 'rest' | 'hiit' | 'yoga' | 'mixed';
 export type WorkoutDifficulty = 'easy' | 'medium' | 'hard';
 
-export interface WorkoutDay {
-  id?: string;
-  plan_id?: string;
-  day_date: Date | string;
-  workout_type: WorkoutType;
-  duration: number; // in minutes
-  difficulty: WorkoutDifficulty;
-  description: string;
-  completed?: boolean;
-}
-
-export interface WorkoutPlan {
+export interface WorkoutSession {
   id?: string;
   user_id?: string;
-  start_date: Date | string;
-  end_date: Date | string;
-  days?: WorkoutDay[];
+  start_time: string;
+  end_time?: string;
+  activity_type: WorkoutType;
+  steps: number;
+  calories_burned: number;
+  duration: number; // in seconds
+  heart_rate?: number;
+  completed: boolean;
+}
+
+export interface WorkoutExercise {
+  name: string;
+  sets?: number;
+  reps?: number;
+  duration?: number; // in seconds
+  completed: boolean;
+}
+
+export interface LiveWorkoutState {
+  isActive: boolean;
+  startTime: string;
+  elapsedTime: number; // in seconds
+  currentExercise?: WorkoutExercise;
+  exercisesList: WorkoutExercise[];
+  currentExerciseIndex: number;
+  pausedAt?: string;
+  metrics: {
+    steps: number;
+    calories: number;
+    heartRate?: number;
+  };
 }
 
 // Helper function to get current user
@@ -32,19 +49,19 @@ export async function getCurrentUser() {
 // Helper function to call RPC safely with proper typing
 export async function callRpc<T>(
   functionName: string, 
-  params?: Record<string, any>
+  params: Record<string, any> = {}
 ): Promise<T[]> {
   try {
-    const { data, error } = await supabase.rpc(functionName, params || {});
+    const { data, error } = await supabase.rpc(functionName, params);
     
     if (error) {
       console.error(`Error calling RPC ${functionName}:`, error);
-      return [];
+      return [] as T[];
     }
     
-    return data as T[] || [];
+    return (data as T[]) || [];
   } catch (error) {
     console.error(`Exception in RPC ${functionName}:`, error);
-    return [];
+    return [] as T[];
   }
 }

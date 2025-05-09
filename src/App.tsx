@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Navigation from "@/components/Navigation";
-import WorkoutPlanner from "@/components/WorkoutPlanner";
 import ActivityTracker from "@/components/ActivityTracker";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import Settings from "@/components/Settings";
@@ -14,6 +13,7 @@ import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
 import GoogleFitCallback from "@/components/GoogleFitCallback";
 import FitnessDashboard from "@/components/dashboard/FitnessDashboard";
+import WorkoutSessionPage from "@/pages/WorkoutSessionPage"; // Added new workout session page
 import { Toaster } from "sonner";
 import "./App.css";
 
@@ -32,7 +32,7 @@ function App() {
               <Route path="/home" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               
               {/* Protected routes */}
-              <Route path="/workouts" element={<ProtectedRoute><WorkoutPlanner /></ProtectedRoute>} />
+              <Route path="/workout-session" element={<ProtectedRoute><WorkoutSessionPage /></ProtectedRoute>} />
               <Route path="/activities" element={<ProtectedRoute><ActivityTracker /></ProtectedRoute>} />
               <Route path="/analytics" element={<ProtectedRoute><AnalyticsDashboard /></ProtectedRoute>} />
               <Route path="/fitness" element={<ProtectedRoute><FitnessDashboard /></ProtectedRoute>} />
