@@ -52,7 +52,7 @@ export async function callRpc<T = any>(
   params: Record<string, any> = {}
 ): Promise<T[]> {
   try {
-    const { data, error } = await supabase.rpc(functionName, params);
+    const { data, error } = await supabase.rpc<T[]>(functionName, params);
     
     if (error) {
       console.error(`Error calling RPC ${functionName}:`, error);
