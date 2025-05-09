@@ -26,7 +26,7 @@ export default function AuthPage() {
   useEffect(() => {
     // Check if the user came from an email verification link or is already logged in
     if (user) {
-      navigate("/");
+      navigate("/home");
     }
 
     // Check for verification message in URL query params
@@ -46,7 +46,7 @@ export default function AuthPage() {
     try {
       await signIn(email, password);
       toast.success("Signed in successfully!");
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       console.error("Sign in error:", error);
       toast.error("Failed to sign in. Please check your credentials.");
@@ -76,7 +76,7 @@ export default function AuthPage() {
     try {
       await signIn("demo@fitstreak.app", "Password123");
       toast.success("Logged in with demo account!");
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       console.error("Demo login error:", error);
       toast.error("Failed to login with demo account.");

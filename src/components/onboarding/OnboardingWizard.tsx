@@ -135,9 +135,35 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   const handleSkip = () => {
+    // Ensure we correctly handle skipping onboarding
     toast.success("Onboarding skipped");
     toast.info("You can always update your profile later");
-    onComplete();
+    
+    // If the user is authenticated, update their profile with minimal data
+    if (user) {
+      supabase
+        .from('profiles')
+        .update({
+          fitness_level: 'beginner', // Default value
+          username: user.email?.split('@')[0] || 'user' // Basic username from email
+        })
+        .eq('id', user.id)
+        .then(() => {
+          // Refresh the profile data
+          refreshProfile().then(() => {
+            // Complete onboarding
+            onComplete();
+          });
+        })
+        .catch(error => {
+          console.error('Error updating profile during skip:', error);
+          // Still complete onboarding even if there's an error
+          onComplete();
+        });
+    } else {
+      // If somehow there's no user, just complete
+      onComplete();
+    }
   };
   
   const handleSourceConnect = (source: string, connected: boolean) => {
@@ -181,15 +207,15 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
           .update({
             username: formData.nickname || user.email?.split('@')[0],
             full_name: formData.fullName,
-            fitness_level: formData.fitnessLevel,
-            fitness_goal: formData.fitnessGoal,
-            workout_type: formData.workoutType,
-            age: parseInt(formData.age),
-            height: parseFloat(formData.height),
-            weight: parseFloat(formData.weight),
-            gender: formData.gender,
-            preferred_workout_time: formData.workoutTime,
-            data_source: formData.dataSourceType,
+            fitness_level: formData.fitnessLevel || 'beginner', // Ensure a default value
+            fitness_goal: formData.fitnessGoal || 'general fitness',
+            workout_type: formData.workoutType || 'mixed',
+            age: formData.age ? parseInt(formData.age) : null,
+            height: formData.height ? parseFloat(formData.height) : null,
+            weight: formData.weight ? parseFloat(formData.weight) : null,
+            gender: formData.gender || 'prefer_not_to_say',
+            preferred_workout_time: formData.workoutTime || 'anytime',
+            data_source: formData.dataSourceType || 'none',
             allow_notifications: formData.allowNotifications
           })
           .eq('id', user.id);
@@ -203,7 +229,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
       
       toast.success("Profile set up successfully!");
       await refreshProfile();
-      onComplete();
+      onComplete(); // This will trigger navigation to the home page
     } catch (error) {
       console.error('Error in onboarding submission:', error);
       toast.error("Something went wrong. Please try again.");

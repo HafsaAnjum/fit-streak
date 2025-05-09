@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Activity, Award, Calendar, User, ChevronRight, Plus, BarChart, Dumbbell, Heart } from "lucide-react";
-import Navigation from "@/components/Navigation";
 import { useAuth } from "@/context/AuthContext";
 import Settings from "@/components/Settings";
 import { Link } from "react-router-dom";
@@ -21,7 +20,6 @@ const MotionCard = motion(Card);
 const Index = () => {
   const { user, profile } = useAuth();
   const [loading, setLoading] = useState(true);
-  const { isChecking } = useOnboardingRedirect();
   
   useEffect(() => {
     // Simulate data loading
@@ -46,7 +44,7 @@ const Index = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  if (loading || isChecking) return <FullPageLoader />;
+  if (loading) return <FullPageLoader />;
   
   return (
     <>
@@ -183,18 +181,24 @@ const Index = () => {
                 <Button variant="ghost" size="sm">View all</Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Button className="justify-start bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add new workout
-                </Button>
-                <Button variant="outline" className="justify-start">
-                  <Activity className="mr-2 h-4 w-4" />
-                  Log today's activity
-                </Button>
-                <Button variant="outline" className="justify-start">
-                  <Heart className="mr-2 h-4 w-4" />
-                  Check health stats
-                </Button>
+                <Link to="/workouts">
+                  <Button className="w-full justify-start bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add new workout
+                  </Button>
+                </Link>
+                <Link to="/activities">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Activity className="mr-2 h-4 w-4" />
+                    Log today's activity
+                  </Button>
+                </Link>
+                <Link to="/fitness">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Heart className="mr-2 h-4 w-4" />
+                    Check health stats
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           </TabsContent>
@@ -213,14 +217,15 @@ const Index = () => {
                 Track your progress, set goals, and achieve your fitness dreams with FitStreak's AI-powered insights.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button>Get Started</Button>
+                <Link to="/workouts">
+                  <Button>Get Started</Button>
+                </Link>
                 <Button variant="outline">Learn More</Button>
               </div>
             </div>
           </Card>
         </motion.div>
       </div>
-      <Navigation />
     </>
   );
 };

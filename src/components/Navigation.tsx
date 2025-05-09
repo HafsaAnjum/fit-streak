@@ -14,6 +14,11 @@ const Navigation = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  
+  // Determine if we should show the navigation
+  const isAuthPage = location.pathname.startsWith('/auth');
+  const isOnboardingPage = location.pathname.startsWith('/onboarding');
+  const shouldHideNav = isAuthPage || isOnboardingPage;
 
   const closeSheet = () => setOpen(false);
 
@@ -29,7 +34,7 @@ const Navigation = () => {
   };
 
   const navLinks = [
-    { name: 'Home', path: '/', icon: <Home className="h-5 w-5" /> },
+    { name: 'Home', path: '/home', icon: <Home className="h-5 w-5" /> },
     { name: 'Workouts', path: '/workouts', icon: <Activity className="h-5 w-5" /> },
     { name: 'Activities', path: '/activities', icon: <Activity className="h-5 w-5" /> },
     { name: 'Analytics', path: '/analytics', icon: <BarChart className="h-5 w-5" /> },
@@ -45,7 +50,7 @@ const Navigation = () => {
   const renderNavLinks = () => {
     return navLinks.map((link) => {
       // Skip protected routes if user is not logged in
-      if (!user && link.path !== '/') {
+      if (!user && link.path !== '/home') {
         return null;
       }
       
@@ -68,6 +73,11 @@ const Navigation = () => {
     });
   };
 
+  // Don't render navigation on auth or onboarding pages
+  if (shouldHideNav) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
@@ -82,7 +92,7 @@ const Navigation = () => {
             </SheetTrigger>
             <SheetContent side="left" className="w-[240px] sm:w-[300px]">
               <div className="px-2 py-6">
-                <Link to="/" className="flex items-center mb-6" onClick={closeSheet}>
+                <Link to="/home" className="flex items-center mb-6" onClick={closeSheet}>
                   <span className="text-xl font-bold">FitStreak</span>
                 </Link>
                 <nav>
@@ -94,7 +104,7 @@ const Navigation = () => {
         ) : null}
 
         {/* Logo */}
-        <Link to="/" className="flex items-center mr-4 space-x-2">
+        <Link to={user ? '/home' : '/auth'} className="flex items-center mr-4 space-x-2">
           <span className="font-bold text-xl">FitStreak</span>
         </Link>
 
@@ -107,19 +117,15 @@ const Navigation = () => {
           </nav>
         )}
 
-        {/* Auth buttons */}
-        <div className="flex items-center space-x-2">
-          {!user ? (
-            <Link to="/auth">
-              <Button>Sign In</Button>
-            </Link>
-          ) : (
+        {/* Auth buttons - Only show when logged in */}
+        {user && (
+          <div className="flex items-center space-x-2">
             <Button variant="ghost" onClick={handleSignOut} className="flex items-center">
               <LogOut className="h-4 w-4 mr-1" />
               Sign Out
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </header>
   );

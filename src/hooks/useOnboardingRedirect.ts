@@ -36,6 +36,9 @@ export const useOnboardingRedirect = () => {
         if (needsOnboarding) {
           setIsNewUser(true);
           navigate('/onboarding');
+        } else {
+          // If user has completed onboarding, redirect to home
+          navigate('/home');
         }
       } catch (error) {
         console.error('Error in onboarding check:', error);

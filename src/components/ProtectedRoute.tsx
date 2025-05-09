@@ -29,7 +29,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     setIsNewUser(false);
-    navigate("/");
+    navigate("/home");
   };
   
   return (

@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Navigation from "@/components/Navigation";
@@ -25,9 +25,11 @@ function App() {
           <Navigation />
           <main className="container mx-auto px-4 py-8 flex-1">
             <Routes>
-              <Route path="/" element={<Index />} />
+              {/* Redirect root to auth if not authenticated */}
+              <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route path="/auth/*" element={<AuthPage />} />
               <Route path="/onboarding/*" element={<OnboardingPage />} />
+              <Route path="/home" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               
               {/* Protected routes */}
               <Route path="/workouts" element={<ProtectedRoute><WorkoutPlanner /></ProtectedRoute>} />
