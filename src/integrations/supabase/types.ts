@@ -150,6 +150,36 @@ export type Database = {
         }
         Relationships: []
       }
+      milestones: {
+        Row: {
+          created_at: string | null
+          description: string
+          icon: string | null
+          id: string
+          target_value: number
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          icon?: string | null
+          id?: string
+          target_value: number
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          icon?: string | null
+          id?: string
+          target_value?: number
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -257,6 +287,47 @@ export type Database = {
           },
         ]
       }
+      user_milestones: {
+        Row: {
+          achieved: boolean
+          achieved_at: string | null
+          created_at: string | null
+          id: string
+          milestone_id: string
+          progress: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achieved?: boolean
+          achieved_at?: string | null
+          created_at?: string | null
+          id?: string
+          milestone_id: string
+          progress?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achieved?: boolean
+          achieved_at?: string | null
+          created_at?: string | null
+          id?: string
+          milestone_id?: string
+          progress?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_milestones_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_sessions: {
         Row: {
           activity_type: string
@@ -343,7 +414,61 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      count_completed_workouts: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
+      get_all_milestones: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string | null
+          description: string
+          icon: string | null
+          id: string
+          target_value: number
+          title: string
+          type: string
+        }[]
+      }
+      get_newly_achieved_milestones: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: string
+          title: string
+          description: string
+          type: string
+          target_value: number
+          icon: string
+        }[]
+      }
+      get_user_fitness_stats: {
+        Args: { user_id_param: string }
+        Returns: {
+          total_workouts: number
+          total_steps: number
+          total_calories: number
+        }[]
+      }
+      get_user_milestones: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: string
+          user_id: string
+          milestone_id: string
+          achieved: boolean
+          achieved_at: string
+          progress: number
+          milestone_title: string
+          milestone_description: string
+          milestone_type: string
+          milestone_target_value: number
+          milestone_icon: string
+        }[]
+      }
+      update_milestone_progress: {
+        Args: { p_user_id: string; p_type: string; p_value: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

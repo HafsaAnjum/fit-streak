@@ -91,22 +91,15 @@ const PublicProfilePage = () => {
         .order("start_time", { ascending: false })
         .limit(5);
 
-      // Fetch achievements
-      const { data: achievementsData } = await supabase
-        .from("user_milestones")
-        .select(`
-          milestone_id,
-          achieved_at,
-          milestone_title,
-          milestone_description,
-          milestone_icon
-        `)
-        .eq("user_id", userId)
-        .eq("achieved", true)
-        .order("achieved_at", { ascending: false })
-        .limit(5);
+      // Fetch achievements using RPC function instead of direct query
+      const { data: achievementsData, error: achievementsError } = await supabase
+        .rpc("get_user_milestones", { p_user_id: userId });
+  
+      if (achievementsError) {
+        console.error("Error fetching achievements:", achievementsError);
+      }
 
-      // Calculate stats
+      // Calculate stats using RPC function
       const { data: statsData } = await supabase
         .rpc("get_user_fitness_stats", { user_id_param: userId });
 
