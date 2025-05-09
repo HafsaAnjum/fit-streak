@@ -7,6 +7,7 @@ import { LogOut, Settings as SettingsIcon, Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 export default function Settings() {
   const { signOut } = useAuth();

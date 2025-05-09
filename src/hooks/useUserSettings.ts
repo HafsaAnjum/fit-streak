@@ -40,7 +40,7 @@ export function useUserSettings() {
 
       if (data) {
         setSettings({
-          theme: data.theme || "system",
+          theme: (data.theme as "light" | "dark" | "system") || "system",
           notifications_enabled: data.notifications_enabled,
           public_profile: data.public_profile,
         });
