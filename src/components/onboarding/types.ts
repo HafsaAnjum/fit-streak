@@ -36,8 +36,8 @@ export interface OnboardingProps {
 }
 
 export interface StepContentProps {
-  formData: OnboardingFormData;
-  setFormData: React.Dispatch<React.SetStateAction<OnboardingFormData>>;
+  formData?: OnboardingFormData;
+  setFormData?: React.Dispatch<React.SetStateAction<OnboardingFormData>>;
   userInfoForm?: any; // For the form that uses react-hook-form
   onSourceConnect?: (source: string, connected: boolean) => void;
   onGoalSelect?: (goal: string) => void;

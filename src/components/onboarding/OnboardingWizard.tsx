@@ -8,7 +8,6 @@ import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { supabase } from "@/integrations/supabase/client";
 
 // Import step components
 import WelcomeStep from "./steps/WelcomeStep";
@@ -39,7 +38,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
     goals: [],
     allowNotifications: false,
   });
-  const { user, refreshProfile } = useAuth();
+  const { user } = useAuth();
   
   const totalSteps = 6;
   
@@ -126,40 +125,8 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   const handleSkip = () => {
-    // Ensure we correctly handle skipping onboarding
-    toast.success("Onboarding skipped");
-    toast.info("You can always update your profile later");
-    
-    // If the user is authenticated, update their profile with minimal data
-    if (user) {
-      // Fixed: Using Promise.resolve to ensure the .then chain can properly handle TypeScript PromiseLike
-      Promise.resolve()
-        .then(() => {
-          return supabase
-            .from('profiles')
-            .update({
-              fitness_level: 'beginner', // Default value
-              username: user.email?.split('@')[0] || 'user' // Basic username from email
-            })
-            .eq('id', user.id);
-        })
-        .then(() => {
-          // Refresh the profile data
-          return refreshProfile();
-        })
-        .then(() => {
-          // Complete onboarding
-          onComplete();
-        })
-        .catch(error => {
-          console.error('Error updating profile during skip:', error);
-          // Still complete onboarding even if there's an error
-          onComplete();
-        });
-    } else {
-      // If somehow there's no user, just complete
-      onComplete();
-    }
+    // Pass the current formData to onComplete even when skipping
+    onComplete(formData);
   };
   
   const handleSourceConnect = (source: string, connected: boolean) => {
@@ -195,45 +162,8 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   const handleSubmit = () => {
-    // Save user profile data to Supabase
-    if (user) {
-      // Fixed: Using Promise.resolve to ensure the .then chain can properly handle TypeScript PromiseLike
-      Promise.resolve()
-        .then(() => {
-          return supabase
-            .from('profiles')
-            .update({
-              username: formData.nickname || user.email?.split('@')[0],
-              full_name: formData.fullName,
-              fitness_level: formData.fitnessLevel || 'beginner', // Ensure a default value
-              fitness_goal: formData.fitnessGoal || 'general fitness',
-              workout_type: formData.workoutType || 'mixed',
-              age: formData.age ? parseInt(formData.age) : null,
-              height: formData.height ? parseFloat(formData.height) : null,
-              weight: formData.weight ? parseFloat(formData.weight) : null,
-              gender: formData.gender || 'prefer_not_to_say',
-              preferred_workout_time: formData.workoutTime || 'anytime',
-              data_source: formData.dataSourceType || 'none',
-              allow_notifications: formData.allowNotifications
-            })
-            .eq('id', user.id);
-        })
-        .then(() => {
-          toast.success("Profile set up successfully!");
-          return refreshProfile();
-        })
-        .then(() => {
-          onComplete(); // This will trigger navigation to the home page
-        })
-        .catch(error => {
-          console.error('Error in onboarding submission:', error);
-          toast.error("Something went wrong. Please try again.");
-        });
-    } else {
-      // No user, just complete onboarding
-      toast.success("Setup completed!");
-      onComplete();
-    }
+    // Pass the complete formData to the onComplete handler
+    onComplete(formData);
   };
 
   const stepVariants = {
@@ -257,7 +187,7 @@ const OnboardingWizard: React.FC<OnboardingProps> = ({ onComplete }) => {
         );
         
       case 3:
-        return <UserInfoStep formData={formData} setFormData={setFormData} userInfoForm={userInfoForm} />;
+        return <UserInfoStep userInfoForm={userInfoForm} />;
         
       case 4:
         return (

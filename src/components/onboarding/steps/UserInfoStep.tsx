@@ -25,6 +25,7 @@ const UserInfoStep: React.FC<StepContentProps> = ({ userInfoForm }) => {
                     type="number" 
                     placeholder="Years" 
                     {...field} 
+                    onChange={e => field.onChange(e.target.value)} // Convert to string for form handling
                   />
                 </FormControl>
                 <FormMessage />
@@ -72,6 +73,7 @@ const UserInfoStep: React.FC<StepContentProps> = ({ userInfoForm }) => {
                     type="number" 
                     placeholder="cm" 
                     {...field} 
+                    onChange={e => field.onChange(e.target.value)} // Convert to string for form handling
                   />
                 </FormControl>
                 <FormMessage />
@@ -90,6 +92,7 @@ const UserInfoStep: React.FC<StepContentProps> = ({ userInfoForm }) => {
                     type="number" 
                     placeholder="kg" 
                     {...field} 
+                    onChange={e => field.onChange(e.target.value)} // Convert to string for form handling
                   />
                 </FormControl>
                 <FormMessage />

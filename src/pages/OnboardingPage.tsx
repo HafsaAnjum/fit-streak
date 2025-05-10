@@ -20,7 +20,7 @@ const OnboardingPage = () => {
     }
   }, [user, navigate]);
   
-  const handleOnboardingComplete = async () => {
+  const handleOnboardingComplete = async (formData: any) => {
     setIsCompleting(true);
     
     try {
@@ -29,7 +29,18 @@ const OnboardingPage = () => {
         await supabase
           .from('profiles')
           .update({ 
-            fitness_level: 'completed_onboarding'
+            username: formData.nickname || user.email?.split('@')[0],
+            full_name: formData.fullName,
+            fitness_level: formData.fitnessLevel || 'beginner', // Ensure a default value
+            fitness_goal: formData.fitnessGoal || 'general fitness',
+            workout_type: formData.workoutType || 'mixed',
+            age: formData.age ? parseInt(formData.age) : null,
+            height: formData.height ? parseFloat(formData.height) : null,
+            weight: formData.weight ? parseFloat(formData.weight) : null,
+            gender: formData.gender || 'prefer_not_to_say',
+            preferred_workout_time: formData.workoutTime || 'anytime',
+            data_source: formData.dataSourceType || 'none',
+            allow_notifications: formData.allowNotifications
           })
           .eq('id', user.id);
         

@@ -182,43 +182,67 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
+          allow_notifications: boolean | null
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          data_source: string | null
+          fitness_goal: string | null
           fitness_level: string | null
+          full_name: string | null
+          gender: string | null
           goal: string | null
           height: number | null
           id: string
+          preferred_workout_time: string | null
           public_profile: boolean | null
           updated_at: string | null
           username: string | null
           weight: number | null
+          workout_type: string | null
         }
         Insert: {
+          age?: number | null
+          allow_notifications?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          data_source?: string | null
+          fitness_goal?: string | null
           fitness_level?: string | null
+          full_name?: string | null
+          gender?: string | null
           goal?: string | null
           height?: number | null
           id: string
+          preferred_workout_time?: string | null
           public_profile?: boolean | null
           updated_at?: string | null
           username?: string | null
           weight?: number | null
+          workout_type?: string | null
         }
         Update: {
+          age?: number | null
+          allow_notifications?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          data_source?: string | null
+          fitness_goal?: string | null
           fitness_level?: string | null
+          full_name?: string | null
+          gender?: string | null
           goal?: string | null
           height?: number | null
           id?: string
+          preferred_workout_time?: string | null
           public_profile?: boolean | null
           updated_at?: string | null
           username?: string | null
           weight?: number | null
+          workout_type?: string | null
         }
         Relationships: []
       }
