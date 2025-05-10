@@ -32,7 +32,7 @@ export interface OnboardingFormData {
 
 // Props for onboarding components
 export interface OnboardingProps {
-  onComplete: () => void;
+  onComplete: (formData: OnboardingFormData) => void;
 }
 
 export interface StepContentProps {

@@ -7,6 +7,7 @@ import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import { FullPageLoader } from "@/components/LoadingSpinner";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { OnboardingFormData } from "@/components/onboarding/types";
 
 const OnboardingPage = () => {
   const [isCompleting, setIsCompleting] = useState(false);
@@ -20,7 +21,7 @@ const OnboardingPage = () => {
     }
   }, [user, navigate]);
   
-  const handleOnboardingComplete = async (formData: any) => {
+  const handleOnboardingComplete = async (formData: OnboardingFormData) => {
     setIsCompleting(true);
     
     try {
